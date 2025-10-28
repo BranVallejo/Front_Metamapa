@@ -62,20 +62,20 @@ const ReportarHecho = () => {
     console.log('DTO que se enviaría al Backend:', dto);
 
     // Aquí es donde harías tu llamada fetch POST al backend
-    // fetch('URL_DE_TU_API', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(dto)
-    // })
-    // .then(res => res.json())
-    // .then(data => {
-    //   alert('Hecho reportado con éxito!');
-    //   navigate('/mapa'); // Redirige al mapa
-    // })
-    // .catch(error => {
-    //   console.error('Error:', error);
-    //   alert('Error al reportar el hecho');
-    // });
+     fetch('URL_DE_TU_API', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify(dto)
+     })
+     .then(res => res.json())
+     .then(data => {
+       alert('Hecho reportado con éxito!');
+       navigate('/mapa'); // Redirige al mapa
+     })
+     .catch(error => {
+       console.error('Error:', error);
+       alert('Error al reportar el hecho');
+     });
 
     alert('Hecho reportado (revisá la consola para ver el DTO)');
   };

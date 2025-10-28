@@ -5,18 +5,30 @@ import MapaPrincipal from "./pages/MapaPrincipal";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ReportarHecho from "./pages/ReportarHecho";
+import MisHechos from "./pages/misHechos";
+import HechoDetalle from "./pages/HechoDetalle";
 
 function App() {
   return (
     <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<MapaPrincipal />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/hechos/nuevo" element={<ReportarHecho />} />
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
 
-      </Routes>
+        <main className="flex-grow pt-16">
+          <Routes>
+            <Route path="/" element={<MapaPrincipal />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/hechos/nuevo" element={<ReportarHecho />} />
+
+            {/* 4. AGREGAMOS LAS NUEVAS RUTAS */}
+            <Route path="/misHechos" element={<MisHechos />} />
+            <Route path="/hechos/:id" element={<HechoDetalle />} />
+
+          </Routes>
+        </main>
+        {/* <Footer /> si tuvieras uno, iría aquí */}
+      </div>
     </Router>
   );
 }
