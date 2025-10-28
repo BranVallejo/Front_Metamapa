@@ -27,13 +27,18 @@ const ProfessionalHeader = () => {
     <header className="w-full bg-white shadow-md border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Logo - Enlaza a la página principal */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-blue-800">MetaMapa</h1>
+            <a
+              href="/"
+              className="text-2xl font-bold text-blue-800 hover:text-blue-600 transition-colors duration-200"
+            >
+              MetaMapa
+            </a>
           </div>
 
-          {/* Botón Central - Versión Mejorada */}
-          <div className="flex-1 flex justify-center">
+          {/* Botón Central - Centrado exacto */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
             <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-lg transition-all duration-200 flex items-center space-x-2 border border-gray-300 hover:border-gray-400 hover:shadow-sm">
               <svg
                 className="w-5 h-5"
@@ -53,18 +58,23 @@ const ProfessionalHeader = () => {
           </div>
 
           {/* Navegación Derecha */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex justify-end">
             {!isLoggedIn ? (
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setIsLoggedIn(true)}
+                {/* Botón Iniciar Sesión - Enlaza a /login */}
+                <a
+                  href="/login"
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 hover:scale-105 border border-gray-300 hover:border-blue-600 py-2 px-4 rounded-lg"
                 >
                   Iniciar Sesión
-                </button>
-                <button className="bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-black">
+                </a>
+                {/* Botón Registrarse - Enlaza a /register */}
+                <a
+                  href="/register"
+                  className="bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-black"
+                >
                   Registrarse
-                </button>
+                </a>
               </div>
             ) : (
               <div className="relative">
