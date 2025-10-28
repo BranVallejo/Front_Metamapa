@@ -432,28 +432,23 @@ const MapaPrincipal = () => {
                   }
                 >
                   <option value="">Todas las categorías</option>
-                  <option value="Incendio">Incendio</option>
-                  <option value="Manifestacion">Manifestación</option>
-                  <option value="Accidente">Accidente</option>
-                  <option value="Evento Cultural">Evento Cultural</option>
-                  <option value="Servicios">Servicios</option>
-                  <option value="Construccion">Construcción</option>
-                  <option value="Inundacion">Inundación</option>
-                  <option value="Granizo">Granizo</option>
-                  <option value="Nevadas">Nevadas</option>
-                  <option value="Calor extremo">Calor extremo</option>
-                  <option value="Sequia">Sequía</option>
-                  <option value="Derrumbes">Derrumbes</option>
-                  <option value="Actividad volcnica">
+                  <option value="vientos fuertes">vientos fuertes</option>
+                  <option value="inundaciones">inundaciones</option>
+                  <option value="granizo">Granizo</option>
+                  <option value="nevadas">Nevadas</option>
+                  <option value="calor extremo">Calor extremo</option>
+                  <option value="sequia">Sequía</option>
+                  <option value="derrumbes">Derrumbes</option>
+                  <option value="actividad volcnica">
                     Actividad volcánica
                   </option>
-                  <option value="Contaminación">Contaminación</option>
-                  <option value="Evento sanitario">Evento sanitario</option>
-                  <option value="Derrame">Derrame</option>
-                  <option value="Intoxicacion masiva">
+                  <option value="contaminación">Contaminación</option>
+                  <option value="evento sanitario">Evento sanitario</option>
+                  <option value="derrame">Derrame</option>
+                  <option value="intoxicacion masiva">
                     Intoxicación masiva
                   </option>
-                  <option value="Sin categoria">Sin categoría</option>
+                  <option value="sin categoria">Sin categoría</option>
                 </select>
               </div>
 
