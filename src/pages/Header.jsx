@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "../Components/ThemeToggle";
+import { estaLogueado, esAdmin } from "../utils/auth";
 
 const ProfessionalHeader = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -104,27 +105,76 @@ const ProfessionalHeader = () => {
             </Link>
           </div>
 
-          {/* Botón Central - Reportar Hechos */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <Link
-              to="/hechos/nuevo"
-              className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium py-2 px-6 rounded-lg transition-all duration-200 flex items-center space-x-2 border border-gray-300 dark:border-gray-600 hover:border-gray-400 hover:shadow-sm"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {/* Navegación Central - 3 Opciones */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
+            {/* Hechos - Para usuarios logueados */}
+            {estaLogueado() && (
+              <Link
+                to="/hechos"
+                className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 border border-gray-300 dark:border-gray-600 hover:border-gray-400 hover:shadow-sm"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>Reportar Hechos</span>
-            </Link>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span>Hechos</span>
+              </Link>
+            )}
+
+            {/* Colecciones - Solo para ADMIN */}
+            {esAdmin() && (
+              <Link
+                to="/colecciones"
+                className="bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-800 dark:text-blue-200 font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 border border-blue-300 dark:border-blue-600 hover:border-blue-400 hover:shadow-sm"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                <span>Colecciones</span>
+              </Link>
+            )}
+
+            {/* Solicitudes Eliminación - Solo para ADMIN */}
+            {esAdmin() && (
+              <Link
+                to="/solicitudes-eliminacion"
+                className="bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-800 dark:text-red-200 font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 border border-red-300 dark:border-red-600 hover:border-red-400 hover:shadow-sm"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                <span>Solicitudes</span>
+              </Link>
+            )}
           </div>
 
           {/* Navegación Derecha */}
@@ -165,7 +215,7 @@ const ProfessionalHeader = () => {
                       {getDisplayName()}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {userData?.rol === "ADMIN" ? "Administrador" : "Usuario"}
+                      {esAdmin() ? "Administrador" : "Usuario"}
                     </p>
                   </div>
                   <svg
@@ -185,101 +235,19 @@ const ProfessionalHeader = () => {
                   </svg>
                 </button>
 
-                {/* Menú Desplegable */}
+                {/* Menú Desplegable Compacto */}
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-300 dark:border-gray-700 py-2 z-[9999]">
-                    {/* Información del usuario */}
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {userData?.email}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        ID: {userData?.userId}
-                      </p>
-                    </div>
-
-                    {/* Mis Hechos */}
-                    <Link
-                      to="/mis-hechos"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                    >
-                      <svg
-                        className="w-5 h-5 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      Mis Hechos Reportados
-                    </Link>
-
-                    {/* Perfil */}
-                    <Link
-                      to="/perfil"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                    >
-                      <svg
-                        className="w-5 h-5 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                      Mi Perfil
-                    </Link>
-
-                    {/* Configuración */}
-                    <Link
-                      to="/configuracion"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                    >
-                      <svg
-                        className="w-5 h-5 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                      Configuración
-                    </Link>
-
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-300 dark:border-gray-700 py-1 z-[9999]">
                     {/* Separador */}
                     <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
 
                     {/* Cerrar Sesión */}
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full text-left px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                      className="flex items-center w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
                     >
                       <svg
-                        className="w-5 h-5 mr-3"
+                        className="w-4 h-4 mr-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
