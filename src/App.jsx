@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import ReportarHecho from "./pages/ReportarHecho";
 import MisHechos from "./pages/misHechos";
 import HechoDetalle from "./pages/HechoDetalle";
+import GestionColecciones from "./pages/Coleccion";
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
             {/* 4. AGREGAMOS LAS NUEVAS RUTAS */}
             <Route path="/misHechos" element={<MisHechos />} />
             <Route path="/hechos/:id" element={<HechoDetalle />} />
-
+            <Route path="/colecciones" element={<GestionColecciones />} />
           </Routes>
         </main>
         {/* <Footer /> si tuvieras uno, iría aquí */}
