@@ -67,10 +67,9 @@ const ReportarHecho = () => {
     };
 
     console.log("DTO que se enviará:", dto);
-
     try {
       const response = await fetch(
-        "http://localhost:8102/fuenteDinamica/hecho",
+        `${import.meta.env.VITE_API_URL_INICIAL}/fuenteDinamica/hecho`,
         {
           method: "POST",
           headers: {

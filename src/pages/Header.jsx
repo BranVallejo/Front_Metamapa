@@ -110,7 +110,7 @@ const ProfessionalHeader = () => {
             {/* Hechos - Para usuarios logueados */}
             {estaLogueado() && (
               <Link
-                to="/hechos"
+                to="/misHechos"
                 className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center space-x-2 border border-gray-300 dark:border-gray-600 hover:border-gray-400 hover:shadow-sm"
               >
                 <svg

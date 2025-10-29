@@ -32,10 +32,11 @@ const Login = () => {
     };
 
     console.log("Datos de login:", datosEnvio);
+    //`${import.meta.env.VITE_API_URL_INICIAL}/productos/?sortOrder=masVendido`
 
     try {
       const response = await fetch(
-        "http://localhost:8500/gestordatos/contribuyentes/login",
+        `${import.meta.env.VITE_API_URL_INICIAL}/contribuyentes/login`,
         {
           method: "POST",
           headers: {
@@ -62,7 +63,7 @@ const Login = () => {
         }
 
         alert("¡Inicio de sesión exitoso!");
-        navigate("/mapa");
+        navigate("/");
       } else {
         const errorText = await response.text();
         setError(errorText || "Credenciales inválidas");
