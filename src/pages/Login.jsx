@@ -32,11 +32,11 @@ const Login = () => {
     };
 
     console.log("Datos de login:", datosEnvio);
-    //`${import.meta.env.VITE_API_URL_INICIAL}/productos/?sortOrder=masVendido`
+    
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL_INICIAL}/contribuyentes/login`,
+        `${import.meta.env.VITE_URL_INICIAL_GESTOR}/contribuyentes/login`,
         {
           method: "POST",
           headers: {

@@ -57,7 +57,7 @@ const Register = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL_INICIAL}/contribuyentes/registrarse`,
+        `${import.meta.env.VITE_URL_INICIAL_GESTOR}/contribuyentes/registrarse`,
         {
           method: "POST",
           headers: {

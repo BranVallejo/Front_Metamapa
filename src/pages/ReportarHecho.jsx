@@ -69,7 +69,7 @@ const ReportarHecho = () => {
     console.log("DTO que se enviará:", dto);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL_INICIAL}/fuenteDinamica/hecho`,
+        `${import.meta.env.VITE_URL_INICIAL_DINAMICA}/hecho`,
         {
           method: "POST",
           headers: {
