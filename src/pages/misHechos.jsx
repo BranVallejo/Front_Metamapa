@@ -1,11 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // <-- 1. IMPORTAMOS LOS HOOKS
 import { Link } from 'react-router-dom';
-import { mockHechos } from '../data/mockHechos'; // Importamos los datos
+// import { mockHechos } from '../data/mockHechos'; // Ya no lo usamos, pero lo podés dejar comentado
 
 const MisHechos = () => {
-  // En el futuro, acá usarías useState y useEffect para un fetch
-  const misHechos = mockHechos;
+  // 2. CREAMOS EL ESTADO para guardar los hechos (reemplaza a la constante)
+  const [misHechos, setMisHechos] = useState([]);
 
+  // 3. PEGADO COMPLETO DE TU LÓGICA FETCH
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    // (Asegurate de que userData y userData.userId existan antes de hacer el fetch)
+    if (!userData || !userData.userId) {
+      console.error("No se encontró ID de usuario en localStorage");
+      // Podrías redirigir al login aquí
+      return; 
+    }
+
+    fetch(
+      `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica/hechos?idContribuyente=${userData.userId}`,
+      {
+        method: "GET",
+        // No se necesita "Content-Type" para un GET
+      })
+      .then(response => {
+        // ¡CLAVE! Verificamos si la respuesta fue un error (como 500 o 404)
+        if (!response.ok) {
+          // Si es un error, lanzamos una excepción para que la capture el .catch
+          throw new Error(`Error del servidor: ${response.status}`);
+        }
+        return response.json(); // Si todo está OK, leemos el JSON
+      })
+      .then(data => {
+        // ¡CLAVE! Accedemos a la propiedad "hechos" del objeto de respuesta
+        if (data && data.hechos) {
+          setMisHechos(data.hechos); // 4. Llenamos el estado con el ARRAY de hechos
+        } else {
+          // Si la respuesta no tiene 'hechos', seteamos un array vacío
+          setMisHechos([]); 
+        }
+      })
+      .catch(error => {
+        console.error("Error al cargar hechos:", error);
+        setMisHechos([]); // En caso de error, seteamos un array vacío para evitar el crash
+      });
+
+  }, []); // El array vacío `[]` asegura que esto se ejecute solo una vez.
+
+  
+  // --- TU CÓDIGO JSX (la "versión vieja") QUEDA IDÉNTICO AQUÍ ABAJO ---
+  // Ahora .map() usará el estado 'misHechos' que se llena con el fetch.
   return (
     <div className="container mx-auto p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       
