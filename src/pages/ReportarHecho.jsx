@@ -52,6 +52,9 @@ const ReportarHecho = () => {
     e.preventDefault();
     setEnviando(true);
 
+    const userData = JSON.parse(localStorage.getItem("user"));
+    userData.userId;
+
     // Construcción del DTO
     const dto = {
       titulo: formData.titulo,
@@ -62,8 +65,8 @@ const ReportarHecho = () => {
       fechaAcontecimiento: new Date(formData.fechaAcontecimiento)
         .toISOString()
         .slice(0, 19),
-      origen: "SBASE",
       etiqueta: formData.etiqueta,
+      contribuyenteID: userData.userId,
     };
 
     console.log("DTO que se enviará:", dto);
