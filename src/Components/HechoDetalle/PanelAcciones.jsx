@@ -23,7 +23,7 @@ const PanelAcciones = ({ idHecho }) => {
           Ocultar Hecho
         </button>
         <Link 
-          to="/mis-hechos"
+          to="/misHechos"
           className="block w-full text-left px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded hover:bg-gray-300"
         >
           Ver Todos Mis Hechos

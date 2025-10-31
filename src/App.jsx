@@ -9,6 +9,7 @@ import MisHechos from "./pages/misHechos";
 import HechoDetalle from "./pages/HechoDetalle";
 import GestionColecciones from "./pages/Coleccion";
 import EditarHecho from "./pages/EditarHecho";
+import 'leaflet/dist/leaflet.css'
 
 function App() {
   return (
