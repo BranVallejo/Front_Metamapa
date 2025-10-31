@@ -9,6 +9,8 @@ import MisHechos from "./pages/misHechos";
 import HechoDetalle from "./pages/HechoDetalle";
 import GestionColecciones from "./pages/Coleccion";
 import EditarHecho from "./pages/EditarHecho";
+import PaginaReporte from "./pages/SolicitudEliminacion";
+import ModuloSolicitudesAdmin from "./pages/TodasSolicitudes";
 
 function App() {
   return (
@@ -28,6 +30,16 @@ function App() {
             <Route path="/hechos/:id" element={<HechoDetalle />} />
             <Route path="/colecciones" element={<GestionColecciones />} />
             <Route path="/hechos/editar/:id" element={<EditarHecho />} />
+
+            <Route
+              path="/solicitarEliminacion/:idHecho"
+              element={<PaginaReporte />}
+            />
+
+            <Route
+              path="/solicitudes-eliminacion"
+              element={<ModuloSolicitudesAdmin />}
+            />
           </Routes>
         </main>
         {/* <Footer /> si tuvieras uno, iría aquí */}

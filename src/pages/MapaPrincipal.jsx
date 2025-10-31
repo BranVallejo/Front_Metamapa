@@ -22,16 +22,16 @@ const MapaPrincipal = () => {
   // Estados
   const [marcadores, setMarcadores] = useState([]);
   const [colecciones, setColecciones] = useState([]);
-  const [coleccionPendiente, setColeccionPendiente] = useState(null); // Colección seleccionada en el dropdown
-  const [coleccionAplicada, setColeccionAplicada] = useState(null); // Colección realmente aplicada
+  const [coleccionPendiente, setColeccionPendiente] = useState(null);
+  const [coleccionAplicada, setColeccionAplicada] = useState(null);
   const [modoColeccionPendiente, setModoColeccionPendiente] =
-    useState("curada"); // Modo pendiente
-  const [modoColeccionAplicada, setModoColeccionAplicada] = useState("curada"); // Modo aplicado
+    useState("curada");
+  const [modoColeccionAplicada, setModoColeccionAplicada] = useState("curada");
   const [infoMapa, setInfoMapa] = useState("Cargando mapa...");
   const [bounds, setBounds] = useState(null);
   const [zoom, setZoom] = useState(4);
 
-  // Filtros - separamos filtros actuales de filtros pendientes
+  // Filtros
   const [filtrosPendientes, setFiltrosPendientes] = useState({
     titulo: "",
     descripcion: "",
@@ -112,12 +112,12 @@ const MapaPrincipal = () => {
       params.append("norte", _northEast.lat);
       params.append("este", _northEast.lng);
 
-      // Agregar filtros APLICADOS (no los pendientes)
+      // Agregar filtros APLICADOS
       Object.entries(filtrosAplicados).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
 
-      // Agregar colección APLICADA (no la pendiente)
+      // Agregar colección APLICADA
       if (coleccionAplicada) {
         params.append("coleccionId", coleccionAplicada.handle);
         params.append("modo", modoColeccionAplicada);
@@ -147,6 +147,15 @@ const MapaPrincipal = () => {
       console.error("Error cargando hechos:", error);
       setInfoMapa("Error cargando hechos");
     }
+  };
+
+  // Función para reportar hecho - redirige a la página de denuncia
+  const reportarHecho = (hecho) => {
+    // Obtener el ID del hecho (puede ser id, _id, o algún otro campo único)
+    const hechoId = hecho.id || hecho._id || hecho.codigo || "desconocido";
+
+    // Redirigir a la página de denuncia
+    window.location.href = `solicitarEliminacion/${hechoId}`;
   };
 
   const cambiarColeccionPendiente = (event) => {
@@ -181,7 +190,6 @@ const MapaPrincipal = () => {
         filtrosConFechasFormateadas[campo] &&
         !filtrosConFechasFormateadas[campo].includes("T")
       ) {
-        // Solo agregar T00:00:00 si no lo tiene ya
         filtrosConFechasFormateadas[
           campo
         ] = `${filtrosConFechasFormateadas[campo]}T00:00:00`;
@@ -194,7 +202,6 @@ const MapaPrincipal = () => {
 
     console.log("Filtros después de formatear:", filtrosConFechasFormateadas);
 
-    // Aplicar los filtros con fechas formateadas
     setFiltrosAplicados(filtrosConFechasFormateadas);
     setColeccionAplicada(coleccionPendiente);
     setModoColeccionAplicada(modoColeccionPendiente);
@@ -209,7 +216,6 @@ const MapaPrincipal = () => {
   };
 
   const limpiarFiltros = () => {
-    // Limpiar ambos sets de filtros y colecciones
     setFiltrosPendientes({
       titulo: "",
       descripcion: "",
@@ -243,7 +249,6 @@ const MapaPrincipal = () => {
   };
 
   const handleFiltroChange = (campo, valor) => {
-    // Si es un campo de fecha, agregar T00:00:00
     let valorFormateado = valor;
 
     if (
@@ -254,7 +259,6 @@ const MapaPrincipal = () => {
       valorFormateado = `${valor}T00:00:00`;
     }
 
-    // Solo actualizar filtros pendientes, no los aplicados
     setFiltrosPendientes((prev) => ({
       ...prev,
       [campo]: valorFormateado,
@@ -378,8 +382,7 @@ const MapaPrincipal = () => {
             </div>
           </div>
 
-          {/* Resto de los filtros (se mantienen igual) */}
-          {/* Búsqueda por Texto */}
+          {/* Resto de los filtros */}
           <div className="mb-6">
             <h4 className="text-blue-600 font-medium mb-2 border-b border-gray-200 pb-1">
               Búsqueda por Texto
@@ -514,7 +517,7 @@ const MapaPrincipal = () => {
                         : ""
                     }
                     onChange={(e) => {
-                      const fecha = e.target.value; // Esto viene en formato YYYY-MM-DD
+                      const fecha = e.target.value;
                       handleFiltroChange(key, fecha);
                     }}
                   />
@@ -540,7 +543,7 @@ const MapaPrincipal = () => {
           </div>
         </div>
 
-        {/* Mapa (se mantiene igual) */}
+        {/* Mapa */}
         <div className="flex-1 flex flex-col p-6">
           <h1 className="text-2xl font-bold text-gray-800 text-center mb-4">
             Mapa de Argentina - Hechos
@@ -607,6 +610,14 @@ const MapaPrincipal = () => {
                           <strong>Etiqueta:</strong> {hecho.etiqueta}
                         </p>
                       )}
+
+                      {/* Botón para reportar - redirige a la página de denuncia */}
+                      <button
+                        onClick={() => reportarHecho(hecho)}
+                        className="w-full mt-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                      >
+                        Reportar este hecho
+                      </button>
                     </div>
                   </Popup>
                 </Marker>
