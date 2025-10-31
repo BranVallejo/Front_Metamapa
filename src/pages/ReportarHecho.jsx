@@ -1,6 +1,6 @@
-// src/pages/ReportarHecho.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import MapaSelectorCoordenadas from '../Components/MapaSelectorCoordenadas';
 
 const ReportarHecho = () => {
   const navigate = useNavigate();
@@ -23,6 +23,14 @@ const ReportarHecho = () => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handleMapClick = (lat, lng) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      latitud: lat.toFixed(6), // Redondeamos a 6 decimales
+      longitud: lng.toFixed(6),
     }));
   };
 
@@ -202,46 +210,53 @@ const ReportarHecho = () => {
             </select>
           </div>
 
-          {/* Fila para Latitud y Longitud */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="latitud"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Latitud <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                id="latitud"
-                name="latitud"
-                value={formData.latitud}
-                onChange={handleChange}
-                placeholder="-34.6037"
-                step="any"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="longitud"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Longitud <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                id="longitud"
-                name="longitud"
-                value={formData.longitud}
-                onChange={handleChange}
-                placeholder="-58.3816"
-                step="any"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+          {/* 3. REEMPLAZAMOS LOS INPUTS DE TEXTO POR EL MAPA */}
+          <div className="md:col-span-2">
+            <label className="block text-gray-700 text-sm font-semibold mb-2">
+              Ubicación <span className="text-red-500">*</span>
+              <span className="text-gray-500 text-xs ml-2">(Haz clic en el mapa para seleccionar)</span>
+            </label>
+            <MapaSelectorCoordenadas
+              latitud={parseFloat(formData.latitud)}
+              longitud={parseFloat(formData.longitud)}
+              onCoordenadasChange={handleMapClick}
+            />
+            {/* {errors.latitud && <p className="text-red-500 text-xs mt-1">{errors.latitud}</p>} */}
+          </div>
+
+          {/* 4. MANTENEMOS LOS INPUTS PERO DESHABILITADOS (para que el usuario vea las coords) */}
+          <div>
+            <label htmlFor="latitud" className="block text-gray-700 text-sm font-semibold mb-2">
+              Latitud (autocompletado)
+            </label>
+            <input
+              type="number"
+              id="latitud"
+              name="latitud"
+              value={formData.latitud}
+              onChange={handleChange} // Opcional: permitir edición manual
+              placeholder="Seleccioná en el mapa..."
+              step="any"
+              disabled // O 'readOnly' si preferís
+              className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="longitud" className="block text-gray-700 text-sm font-semibold mb-2">
+              Longitud (autocompletado)
+            </label>
+            <input
+              type="number"
+              id="longitud"
+              name="longitud"
+              value={formData.longitud}
+              onChange={handleChange} // Opcional: permitir edición manual
+              placeholder="Seleccioná en el mapa..."
+              step="any"
+              disabled
+              className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 focus:outline-none"
+            />
           </div>
 
           {/* Fila para Fecha y Etiqueta */}
@@ -315,9 +330,8 @@ const ReportarHecho = () => {
             <button
               type="submit"
               disabled={enviando}
-              className={`px-6 py-2 bg-blue-600 text-white rounded-md flex items-center ${
-                enviando ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
-              }`}
+              className={`px-6 py-2 bg-blue-600 text-white rounded-md flex items-center ${enviando ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+                }`}
             >
               {enviando ? (
                 <>
