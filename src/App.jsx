@@ -11,6 +11,7 @@ import GestionColecciones from "./pages/Coleccion";
 import EditarHecho from "./pages/EditarHecho";
 import PaginaReporte from "./pages/SolicitudEliminacion";
 import ModuloSolicitudesAdmin from "./pages/TodasSolicitudes";
+import "leaflet/dist/leaflet.css";
 
 function App() {
   return (
