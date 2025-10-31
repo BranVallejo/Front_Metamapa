@@ -96,7 +96,7 @@ const HechoDetalle = () => {
           
           {/* Columna Derecha (Acciones e Info) */}
           <div className="lg:col-span-1 space-y-6">
-            <PanelAcciones />
+            <PanelAcciones idHecho={hecho.id} />
             <PanelInformacion hecho={hecho} />
           </div>
         </div>
