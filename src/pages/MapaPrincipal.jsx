@@ -8,8 +8,9 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import FiltrosPanel from "../Components/FiltrosPanel"; // Importamos el panel
 
-// Fix para los iconos de Leaflet
+// --- Fix para los iconos de Leaflet (Tu código) ---
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -18,79 +19,72 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
+// --- Ícono SVG para el botón flotante de filtros ---
+const FiltroIcono = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+  </svg>
+);
+
+// --- Componente para manejar eventos del mapa (Tu código, modificado) ---
+function MapEvents({ onBoundsChange, onZoomChange, zoomMinimoParaHechos, setInfoMapa, setMarcadores }) {
+  const map = useMapEvents({
+    moveend: () => {
+      onBoundsChange(map.getBounds());
+      onZoomChange(map.getZoom());
+    },
+    zoomend: () => {
+      const newZoom = map.getZoom();
+      onZoomChange(newZoom);
+      // Lógica que estaba en tu <MapContainer> original, movida aquí
+      if (newZoom < zoomMinimoParaHechos) {
+        setMarcadores([]);
+        setInfoMapa(`Zoom bajo (${newZoom.toFixed(1)}). Acerca a ${zoomMinimoParaHechos}+ para ver hechos.`);
+      }
+    },
+  });
+  return null;
+}
+
 const MapaPrincipal = () => {
-  // Estados
+  // --- ESTADOS ---
+  const [panelFiltrosAbierto, setPanelFiltrosAbierto] = useState(false);
   const [marcadores, setMarcadores] = useState([]);
   const [colecciones, setColecciones] = useState([]);
   const [coleccionPendiente, setColeccionPendiente] = useState(null);
   const [coleccionAplicada, setColeccionAplicada] = useState(null);
-  const [modoColeccionPendiente, setModoColeccionPendiente] =
-    useState("curada");
+  const [modoColeccionPendiente, setModoColeccionPendiente] = useState("curada");
   const [modoColeccionAplicada, setModoColeccionAplicada] = useState("curada");
-  const [infoMapa, setInfoMapa] = useState("Cargando mapa...");
+  const [infoMapa, setInfoMapa] = useState("Mové el mapa para cargar hechos.");
   const [bounds, setBounds] = useState(null);
   const [zoom, setZoom] = useState(4);
-
-  // Filtros
   const [filtrosPendientes, setFiltrosPendientes] = useState({
-    titulo: "",
-    descripcion: "",
-    categoria: "",
-    tipoFuente: "",
-    contieneMultimedia: "",
-    desdeAcontecimiento: "",
-    hastaAcontecimiento: "",
-    desdeCarga: "",
-    hastaCarga: "",
+    titulo: "", descripcion: "", categoria: "", tipoFuente: "", contieneMultimedia: "",
+    desdeAcontecimiento: "", hastaAcontecimiento: "", desdeCarga: "", hastaCarga: "",
   });
+  const [filtrosAplicados, setFiltrosAplicados] = useState({ ...filtrosPendientes });
 
-  const [filtrosAplicados, setFiltrosAplicados] = useState({
-    titulo: "",
-    descripcion: "",
-    categoria: "",
-    tipoFuente: "",
-    contieneMultimedia: "",
-    desdeAcontecimiento: "",
-    hastaAcontecimiento: "",
-    desdeCarga: "",
-    hastaCarga: "",
-  });
-
-  // Configuración
+  // --- CONFIGURACIÓN ---
   const zoomMinimoParaHechos = 13;
-  const API_BASE_URL = "http://localhost:8500/gestordatos/publica";
+  const API_BASE_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica`;
 
-  // Cargar colecciones al inicio
+  // --- LÓGICA DE DATOS (Tus funciones) ---
   useEffect(() => {
     cargarColecciones();
   }, []);
 
-  // Cargar hechos solo cuando cambien los bounds, zoom o filtros APLICADOS
   useEffect(() => {
     if (bounds && zoom >= zoomMinimoParaHechos) {
       cargarHechosParaAreaVisible();
     }
-  }, [
-    bounds,
-    zoom,
-    filtrosAplicados,
-    coleccionAplicada,
-    modoColeccionAplicada,
-  ]);
+  }, [bounds, zoom, filtrosAplicados, coleccionAplicada, modoColeccionAplicada]);
 
   const cargarColecciones = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/colecciones`);
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
       const data = await response.json();
-      console.log("Respuesta de API:", data);
-
-      if (data && data.colecciones && Array.isArray(data.colecciones)) {
-        setColecciones(data.colecciones);
-      } else {
-        setColecciones([]);
-      }
+      setColecciones(data.colecciones || []);
     } catch (error) {
       console.error("Error cargando colecciones:", error);
       setColecciones([]);
@@ -99,46 +93,32 @@ const MapaPrincipal = () => {
 
   const cargarHechosParaAreaVisible = async () => {
     if (!bounds) return;
-
     try {
       setInfoMapa("Cargando hechos...");
-
       const params = new URLSearchParams();
-
-      // Agregar bounds
       const { _southWest, _northEast } = bounds;
       params.append("sur", _southWest.lat);
       params.append("oeste", _southWest.lng);
       params.append("norte", _northEast.lat);
       params.append("este", _northEast.lng);
 
-      // Agregar filtros APLICADOS
       Object.entries(filtrosAplicados).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
 
-      // Agregar colección APLICADA
       if (coleccionAplicada) {
         params.append("coleccionId", coleccionAplicada.handle);
         params.append("modo", modoColeccionAplicada);
       }
 
       const url = `${API_BASE_URL}/hechos?${params.toString()}`;
-      console.log("Fetching hechos from:", url);
-
       const response = await fetch(url);
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
       const data = await response.json();
-      console.log("Datos recibidos:", data);
 
       if (data && data.hechos && Array.isArray(data.hechos)) {
         setMarcadores(data.hechos);
-        setInfoMapa(
-          `Cargados ${
-            data.hechos_encontrados || data.hechos.length
-          } hechos en el área visible`
-        );
+        setInfoMapa(`Cargados ${data.hechos_encontrados || data.hechos.length} hechos`);
       } else {
         setMarcadores([]);
         setInfoMapa("No se encontraron hechos");
@@ -149,23 +129,15 @@ const MapaPrincipal = () => {
     }
   };
 
-  // Función para reportar hecho - redirige a la página de denuncia
-  const reportarHecho = (hecho) => {
-    // Obtener el ID del hecho (puede ser id, _id, o algún otro campo único)
-    const hechoId = hecho.id || hecho._id || hecho.codigo || "desconocido";
-
-    // Redirigir a la página de denuncia
-    window.location.href = `solicitarEliminacion/${hechoId}`;
+  // --- LÓGICA DE FILTROS (Tus funciones) ---
+  const handleFiltroChange = (campo, valor) => {
+    setFiltrosPendientes((prev) => ({ ...prev, [campo]: valor }));
   };
 
   const cambiarColeccionPendiente = (event) => {
     const selectedValue = event.target.value;
-    if (selectedValue) {
-      const coleccion = colecciones.find((c) => c.handle === selectedValue);
-      setColeccionPendiente(coleccion);
-    } else {
-      setColeccionPendiente(null);
-    }
+    const coleccion = colecciones.find((c) => c.handle === selectedValue) || null;
+    setColeccionPendiente(coleccion);
   };
 
   const cambiarModoColeccionPendiente = (modo) => {
@@ -173,466 +145,149 @@ const MapaPrincipal = () => {
   };
 
   const aplicarFiltros = () => {
-    // Formatear fechas antes de aplicar
     const filtrosConFechasFormateadas = { ...filtrosPendientes };
-
-    const camposFecha = [
-      "desdeAcontecimiento",
-      "hastaAcontecimiento",
-      "desdeCarga",
-      "hastaCarga",
-    ];
-
-    console.log("Filtros pendientes antes de formatear:", filtrosPendientes);
-
+    const camposFecha = ["desdeAcontecimiento", "hastaAcontecimiento", "desdeCarga", "hastaCarga"];
     camposFecha.forEach((campo) => {
-      if (
-        filtrosConFechasFormateadas[campo] &&
-        !filtrosConFechasFormateadas[campo].includes("T")
-      ) {
-        filtrosConFechasFormateadas[
-          campo
-        ] = `${filtrosConFechasFormateadas[campo]}T00:00:00`;
-        console.log(
-          `Campo ${campo} formateado:`,
-          filtrosConFechasFormateadas[campo]
-        );
+      if (filtrosConFechasFormateadas[campo] && !filtrosConFechasFormateadas[campo].includes("T")) {
+        filtrosConFechasFormateadas[campo] = `${filtrosConFechasFormateadas[campo]}T00:00:00`;
       }
     });
-
-    console.log("Filtros después de formatear:", filtrosConFechasFormateadas);
-
     setFiltrosAplicados(filtrosConFechasFormateadas);
     setColeccionAplicada(coleccionPendiente);
     setModoColeccionAplicada(modoColeccionPendiente);
-
-    setInfoMapa("Aplicando filtros...");
-
-    if (bounds && zoom >= zoomMinimoParaHechos) {
-      cargarHechosParaAreaVisible();
-    } else {
-      setInfoMapa("Filtros aplicados - acerca el mapa para ver resultados");
-    }
+    setPanelFiltrosAbierto(false); // <-- Cierra el panel
   };
 
   const limpiarFiltros = () => {
-    setFiltrosPendientes({
-      titulo: "",
-      descripcion: "",
-      categoria: "",
-      tipoFuente: "",
-      contieneMultimedia: "",
-      desdeAcontecimiento: "",
-      hastaAcontecimiento: "",
-      desdeCarga: "",
-      hastaCarga: "",
-    });
-
-    setFiltrosAplicados({
-      titulo: "",
-      descripcion: "",
-      categoria: "",
-      tipoFuente: "",
-      contieneMultimedia: "",
-      desdeAcontecimiento: "",
-      hastaAcontecimiento: "",
-      desdeCarga: "",
-      hastaCarga: "",
-    });
-
+    const filtrosVacios = {
+      titulo: "", descripcion: "", categoria: "", tipoFuente: "", contieneMultimedia: "",
+      desdeAcontecimiento: "", hastaAcontecimiento: "", desdeCarga: "", hastaCarga: "",
+    };
+    setFiltrosPendientes(filtrosVacios);
+    setFiltrosAplicados(filtrosVacios);
     setColeccionPendiente(null);
     setColeccionAplicada(null);
     setModoColeccionPendiente("curada");
     setModoColeccionAplicada("curada");
     setMarcadores([]);
     setInfoMapa("Filtros limpiados");
+    setPanelFiltrosAbierto(false); // <-- Cierra el panel
   };
 
-  const handleFiltroChange = (campo, valor) => {
-    let valorFormateado = valor;
-
-    if (
-      valor &&
-      (campo.includes("desde") || campo.includes("hasta")) &&
-      campo.includes("Acontecimiento")
-    ) {
-      valorFormateado = `${valor}T00:00:00`;
-    }
-
-    setFiltrosPendientes((prev) => ({
-      ...prev,
-      [campo]: valorFormateado,
-    }));
+  // --- TU FUNCIÓN REPORTAR HECHO (INTEGRADA) ---
+  const reportarHecho = (hecho) => {
+    const hechoId = hecho.id || hecho._id || hecho.codigo || "desconocido";
+    // Redirigir a la página de denuncia
+    window.location.href = `solicitarEliminacion/${hechoId}`;
   };
 
-  // Componente para manejar eventos del mapa
-  function MapEvents({ onBoundsChange, onZoomChange }) {
-    const map = useMapEvents({
-      moveend: () => {
-        const newBounds = map.getBounds();
-        const newZoom = map.getZoom();
-        onBoundsChange(newBounds);
-        onZoomChange(newZoom);
-      },
-      zoomend: () => {
-        const newZoom = map.getZoom();
-        onZoomChange(newZoom);
-      },
-    });
-    return null;
-  }
-
+  // --- RENDERIZADO (NUEVO LAYOUT) ---
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="flex h-[calc(100vh-4rem)]">
-        {/* Sidebar de Filtros */}
-        <div className="w-80 bg-white p-4 shadow-lg overflow-y-auto">
-          <h3 className="text-lg font-semibold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">
-            Filtros de Búsqueda
-          </h3>
+    // Contenedor relativo que ocupa toda la altura (menos el header)
+    <div className="h-[calc(100vh-4rem)] w-full relative overflow-hidden dark:bg-gray-900">
 
-          {/* Filtro de Colección */}
-          <div className="mb-6">
-            <h4 className="text-blue-600 font-medium mb-2 border-b border-gray-200 pb-1">
-              Colección
-            </h4>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Seleccionar Colección:
-              </label>
-              <select
-                className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                onChange={cambiarColeccionPendiente}
-                value={coleccionPendiente?.handle || ""}
-              >
-                <option value="">Todas las colecciones</option>
-                {colecciones.map((coleccion) => (
-                  <option key={coleccion.handle} value={coleccion.handle}>
-                    {coleccion.titulo}
-                  </option>
-                ))}
-              </select>
+      {/* Botón Flotante para ABRIR filtros */}
+      <button
+        onClick={() => setPanelFiltrosAbierto(true)}
+        className="absolute top-4 right-4 z-[1000] p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+        aria-label="Abrir filtros"
+      >
+        <FiltroIcono />
+      </button>
 
-              {/* Modos de colección */}
-              {coleccionPendiente && (
-                <>
-                  <div className="mt-3">
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Modo de visualización:
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        className={`flex-1 py-1 px-2 text-xs border border-green-500 rounded transition-colors ${
-                          modoColeccionPendiente === "curada"
-                            ? "bg-green-500 text-white"
-                            : "bg-white text-green-500 hover:bg-green-500 hover:text-white"
-                        }`}
-                        onClick={() => cambiarModoColeccionPendiente("curada")}
-                      >
-                        Curada
-                      </button>
-                      <button
-                        className={`flex-1 py-1 px-2 text-xs border border-green-500 rounded transition-colors ${
-                          modoColeccionPendiente === "irrestricta"
-                            ? "bg-green-500 text-white"
-                            : "bg-white text-green-500 hover:bg-green-500 hover:text-white"
-                        }`}
-                        onClick={() =>
-                          cambiarModoColeccionPendiente("irrestricta")
-                        }
-                      >
-                        Irrestricta
-                      </button>
-                    </div>
-                  </div>
+      {/* El Overlay (fondo oscuro) para cerrar en móvil */}
+      {panelFiltrosAbierto && (
+        <div
+          onClick={() => setPanelFiltrosAbierto(false)}
+          className="absolute inset-0 bg-black/50 z-[1001] md:hidden" // Oculto en pantallas medianas y grandes
+        ></div>
+      )}
 
-                  {/* Información de colección PENDIENTE */}
-                  <div className="mt-3 bg-blue-50 p-3 rounded border-l-4 border-green-500">
-                    <h4 className="font-medium text-green-600 text-sm">
-                      {coleccionPendiente.titulo}
-                    </h4>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {coleccionPendiente.descripcion || "Sin descripción"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      <strong>Modo:</strong>{" "}
-                      {modoColeccionPendiente === "curada"
-                        ? "Curada"
-                        : "Irrestricta"}
-                    </p>
-                  </div>
-                </>
-              )}
+      {/* El Panel de Filtros (ahora un componente) */}
+      <FiltrosPanel
+        isOpen={panelFiltrosAbierto}
+        onClose={() => setPanelFiltrosAbierto(false)}
+        // Pasamos todos los estados y funciones que necesita
+        colecciones={colecciones}
+        filtros={filtrosPendientes}
+        coleccionPendiente={coleccionPendiente}
+        modoColeccionPendiente={modoColeccionPendiente}
+        coleccionAplicada={coleccionAplicada}
+        modoColeccionAplicada={modoColeccionAplicada}
+        onFiltroChange={handleFiltroChange}
+        onColeccionChange={cambiarColeccionPendiente}
+        onModoChange={cambiarModoColeccionPendiente}
+        onLimpiar={limpiarFiltros}
+        onAplicar={aplicarFiltros}
+      />
 
-              {/* Información de colección APLICADA si es diferente de la pendiente */}
-              {coleccionAplicada &&
-                coleccionAplicada.handle !== coleccionPendiente?.handle && (
-                  <div className="mt-3 bg-green-50 p-3 rounded border-l-4 border-blue-500">
-                    <h4 className="font-medium text-blue-600 text-sm">
-                      Colección activa: {coleccionAplicada.titulo}
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1">
-                      <strong>Modo aplicado:</strong>{" "}
-                      {modoColeccionAplicada === "curada"
-                        ? "Curada"
-                        : "Irrestricta"}
-                    </p>
-                  </div>
+      {/* El Mapa (ocupa todo el espacio) */}
+      <MapContainer
+        center={[-38.4161, -63.6167]}
+        zoom={4}
+        style={{ height: "100%", width: "100%", zIndex: 0 }} // zIndex 0 para que quede de fondo
+        minZoom={4}
+        maxZoom={15.5}
+        maxBounds={[[-55.0, -73.0], [-21.0, -53.0]]}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <MapEvents
+          onBoundsChange={setBounds}
+          onZoomChange={setZoom}
+          zoomMinimoParaHechos={zoomMinimoParaHechos}
+          setInfoMapa={setInfoMapa}
+          setMarcadores={setMarcadores}
+        />
+
+        {/* --- TU LÓGICA DE POPUP (INTEGRADA) --- */}
+        {marcadores.map((hecho, index) => (
+          <Marker
+            key={index}
+            position={[
+              parseFloat(hecho.latitud),
+              parseFloat(hecho.longitud),
+            ]}
+          >
+            <Popup>
+              <div className="min-w-64 max-w-sm">
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  {hecho.titulo || "Sin título"}
+                </h4>
+                <p className="text-sm mb-1">
+                  <strong>Categoría:</strong>{" "}
+                  {hecho.categoria || hecho.etiqueta || "No especificada"}
+                </p>
+                <p className="text-sm mb-2">
+                  {hecho.descripcion || "Sin descripción"}
+                </p>
+                <p className="text-xs text-gray-600">
+                  <strong>Fecha:</strong>{" "}
+                  {hecho.fechaAcontecimiento
+                    ? new Date(
+                      hecho.fechaAcontecimiento
+                    ).toLocaleDateString()
+                    : "No especificada"}
+                </p>
+                {hecho.etiqueta && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    <strong>Etiqueta:</strong> {hecho.etiqueta}
+                  </p>
                 )}
-            </div>
-          </div>
-
-          {/* Resto de los filtros */}
-          <div className="mb-6">
-            <h4 className="text-blue-600 font-medium mb-2 border-b border-gray-200 pb-1">
-              Búsqueda por Texto
-            </h4>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Título:
-                </label>
-                <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  placeholder="Buscar en título..."
-                  value={filtrosPendientes.titulo}
-                  onChange={(e) => handleFiltroChange("titulo", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción:
-                </label>
-                <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  placeholder="Buscar en descripción..."
-                  value={filtrosPendientes.descripcion}
-                  onChange={(e) =>
-                    handleFiltroChange("descripcion", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Filtros por Categoría */}
-          <div className="mb-6">
-            <h4 className="text-blue-600 font-medium mb-2 border-b border-gray-200 pb-1">
-              Filtros por Categoría
-            </h4>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categoría:
-                </label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  value={filtrosPendientes.categoria}
-                  onChange={(e) =>
-                    handleFiltroChange("categoria", e.target.value)
-                  }
+                <button
+                  onClick={() => reportarHecho(hecho)}
+                  className="w-full mt-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
                 >
-                  <option value="">Todas las categorías</option>
-                  <option value="vientos fuertes">vientos fuertes</option>
-                  <option value="inundaciones">inundaciones</option>
-                  <option value="granizo">Granizo</option>
-                  <option value="nevadas">Nevadas</option>
-                  <option value="calor extremo">Calor extremo</option>
-                  <option value="sequia">Sequía</option>
-                  <option value="derrumbes">Derrumbes</option>
-                  <option value="actividad volcnica">
-                    Actividad volcánica
-                  </option>
-                  <option value="contaminación">Contaminación</option>
-                  <option value="evento sanitario">Evento sanitario</option>
-                  <option value="derrame">Derrame</option>
-                  <option value="intoxicacion masiva">
-                    Intoxicación masiva
-                  </option>
-                  <option value="sin categoria">Sin categoría</option>
-                </select>
+                  Reportar este hecho
+                </button>
               </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ¿Tiene multimedia?
-                </label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  value={filtrosPendientes.contieneMultimedia}
-                  onChange={(e) =>
-                    handleFiltroChange("contieneMultimedia", e.target.value)
-                  }
-                >
-                  <option value="">Todos</option>
-                  <option value="true">Sí</option>
-                  <option value="false">No</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Origen:
-                </label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  value={filtrosPendientes.tipoFuente}
-                  onChange={(e) =>
-                    handleFiltroChange("tipoFuente", e.target.value)
-                  }
-                >
-                  <option value="">Todos los orígenes</option>
-                  <option value="DINAMICA">Por otros usuarios</option>
-                  <option value="ESTATICA">De archivos</option>
-                  <option value="PROXY">Otros mapas</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Filtros por Fecha */}
-          <div className="mb-6">
-            <h4 className="text-blue-600 font-medium mb-2 border-b border-gray-200 pb-1">
-              Filtros por Fecha
-            </h4>
-            <div className="space-y-3">
-              {[
-                { label: "Acontecimiento Desde:", key: "desdeAcontecimiento" },
-                { label: "Acontecimiento Hasta:", key: "hastaAcontecimiento" },
-                { label: "Carga Desde:", key: "desdeCarga" },
-                { label: "Carga Hasta:", key: "hastaCarga" },
-              ].map(({ label, key }) => (
-                <div key={key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {label}
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                    value={
-                      filtrosPendientes[key]
-                        ? filtrosPendientes[key].split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const fecha = e.target.value;
-                      handleFiltroChange(key, fecha);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Botones */}
-          <div className="flex gap-3">
-            <button
-              className="flex-1 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm"
-              onClick={limpiarFiltros}
-            >
-              Limpiar
-            </button>
-            <button
-              className="flex-1 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
-              onClick={aplicarFiltros}
-            >
-              Aplicar
-            </button>
-          </div>
-        </div>
-
-        {/* Mapa */}
-        <div className="flex-1 flex flex-col p-6">
-          <h1 className="text-2xl font-bold text-gray-800 text-center mb-4">
-            Mapa de Argentina - Hechos
-          </h1>
-
-          <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-            <MapContainer
-              center={[-38.4161, -63.6167]}
-              zoom={4}
-              style={{ height: "100%", width: "100%" }}
-              minZoom={4}
-              maxZoom={15.5}
-              maxBounds={[
-                [-55.0, -73.0],
-                [-21.0, -53.0],
-              ]}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <MapEvents
-                onBoundsChange={setBounds}
-                onZoomChange={(newZoom) => {
-                  setZoom(newZoom);
-                  if (newZoom < zoomMinimoParaHechos) {
-                    setMarcadores([]);
-                    setInfoMapa(
-                      `Zoom bajo (${newZoom.toFixed(
-                        1
-                      )}). Acerca a ${zoomMinimoParaHechos}+ para ver hechos.`
-                    );
-                  }
-                }}
-              />
-
-              {marcadores.map((hecho, index) => (
-                <Marker
-                  key={index}
-                  position={[
-                    parseFloat(hecho.latitud),
-                    parseFloat(hecho.longitud),
-                  ]}
-                >
-                  <Popup>
-                    <div className="min-w-64 max-w-sm">
-                      <h4 className="font-semibold text-gray-800 mb-2">
-                        {hecho.titulo || "Sin título"}
-                      </h4>
-                      <p className="text-sm mb-1">
-                        <strong>Categoría:</strong>{" "}
-                        {hecho.categoria || hecho.etiqueta || "No especificada"}
-                      </p>
-                      <p className="text-sm mb-2">
-                        {hecho.descripcion || "Sin descripción"}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        <strong>Fecha:</strong>{" "}
-                        {hecho.fechaAcontecimiento
-                          ? new Date(
-                              hecho.fechaAcontecimiento
-                            ).toLocaleDateString()
-                          : "No especificada"}
-                      </p>
-                      {hecho.etiqueta && (
-                        <p className="text-xs text-gray-600 mt-1">
-                          <strong>Etiqueta:</strong> {hecho.etiqueta}
-                        </p>
-                      )}
-
-                      {/* Botón para reportar - redirige a la página de denuncia */}
-                      <button
-                        onClick={() => reportarHecho(hecho)}
-                        className="w-full mt-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-                      >
-                        Reportar este hecho
-                      </button>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-
-          {/* Panel de información */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-            <h3 className="font-semibold text-gray-800 mb-1">Información</h3>
-            <p className="text-sm text-gray-600">
-              {infoMapa} | Zoom actual: {zoom.toFixed(1)}
-            </p>
-          </div>
-        </div>
+      {/* La info como una barra flotante en la parte inferior */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[1000] p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md text-xs text-gray-700 dark:text-gray-200">
+        {infoMapa} | Zoom: {zoom.toFixed(1)}
       </div>
     </div>
   );
