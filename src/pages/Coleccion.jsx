@@ -32,9 +32,9 @@ const GestionColecciones = () => {
 
   // Opciones disponibles
   const algoritmosConsenso = [
-    { valor: "ABSOLUTO", label: "Absoluto" },
-    { valor: "MAYORIASIMPLE", label: "Mayoría Simple" },
-    { valor: "MULTIPLES_MENCIONES", label: "Múltiples Menciones" },
+    { valor: "absoluto", label: "Absoluto" },
+    { valor: "mayoriasimple", label: "Mayoría Simple" },
+    { valor: "multiplesmenciones", label: "Múltiples Menciones" },
   ];
 
   const fuentesDisponibles = [
