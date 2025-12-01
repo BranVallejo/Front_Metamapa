@@ -19,6 +19,63 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
+// --- Mapa de categorías a iconos ---
+const ICONOS_POR_CATEGORIA = {
+  "vientos fuertes":
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764598155/library/kmiqb9omymu9wslfiuuw.png",
+  inundaciones:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597838/library/dgnvihgxja3w0vjirh6v.png",
+  granizo:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597837/library/fbzojfvzjpbnz9jewyz2.png",
+  nevadas:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597835/library/qajssptx9uwmx3vdba7l.png",
+  "calor extremo":
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764552388/library/ctfnm4pdbvfiov8h7baf.png",
+  sequía:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597834/library/kql3w2aqpunstdh9do3o.png",
+  derrumbes:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597832/library/zxnlezu40tb1dmhp2iej.png",
+  "actividad volcánica":
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597831/library/tdtvggiidquyfbmyxmns.png",
+  contaminación:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597829/library/ydueinicqx5ao4ht6hrq.png",
+  "evento sanitario":
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597828/library/ajc9hct7ojhtb0fmjbup.png",
+  derrame:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597825/library/oywe8bygnbkefpgipx8p.png",
+  "intoxicación masiva":
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597826/library/wlkf9hsnot4cmru4ghuc.png",
+  incendios:
+    "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764552388/library/ctfnm4pdbvfiov8h7baf.png",
+};
+
+// --- Ícono por defecto (cuando no hay match) ---
+const ICONO_DEFAULT =
+  "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597823/library/iwq8tmolua2ux5szrezt.png";
+
+// --- Función SIMPLE para obtener el ícono según categoría ---
+const obtenerIconoParaHecho = (hecho) => {
+  const categoria = hecho?.categoria?.toLowerCase().trim();
+
+  // Determinar qué URL usar
+  let iconUrl = ICONO_DEFAULT; // Por defecto si no hay match
+
+  if (categoria && ICONOS_POR_CATEGORIA[categoria]) {
+    iconUrl = ICONOS_POR_CATEGORIA[categoria];
+  }
+
+  return new L.Icon({
+    iconUrl: iconUrl,
+    iconSize: [50, 50],
+    iconAnchor: [21, 45],
+    popupAnchor: [0, -38],
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 41],
+    className: "marker-icon-custom",
+  });
+};
+
 // --- Ícono SVG para el botón flotante de filtros ---
 const FiltroIcono = () => (
   <svg
@@ -496,141 +553,161 @@ const MapaPrincipal = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] w-full relative overflow-hidden dark:bg-gray-900">
-      {/* Botón Flotante para ABRIR filtros */}
-      <button
-        onClick={() => setPanelFiltrosAbierto(true)}
-        className="absolute top-4 right-4 z-[1000] p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-        aria-label="Abrir filtros"
-      >
-        <FiltroIcono />
-      </button>
+    <>
+      {/* CSS para arreglar el cursor */}
+      <style jsx>{`
+        .leaflet-container {
+          cursor: default !important;
+        }
 
-      {/* El Overlay (fondo oscuro) para cerrar en móvil */}
-      {panelFiltrosAbierto && (
-        <div
-          onClick={() => setPanelFiltrosAbierto(false)}
-          className="absolute inset-0 bg-black/50 z-[1001] md:hidden"
-        ></div>
-      )}
+        .leaflet-container .leaflet-interactive {
+          cursor: pointer !important;
+        }
 
-      {/* El Panel de Filtros */}
-      <FiltrosPanel
-        isOpen={panelFiltrosAbierto}
-        onClose={() => setPanelFiltrosAbierto(false)}
-        colecciones={colecciones}
-        filtros={filtrosPendientes}
-        coleccionPendiente={coleccionPendiente}
-        modoColeccionPendiente={modoColeccionPendiente}
-        coleccionAplicada={coleccionAplicada}
-        modoColeccionAplicada={modoColeccionAplicada}
-        onFiltroChange={handleFiltroChange}
-        onColeccionChange={cambiarColeccionPendiente}
-        onModoChange={cambiarModoColeccionPendiente}
-        onLimpiar={limpiarFiltros}
-        onAplicar={aplicarFiltros}
-      />
+        .marker-icon-custom {
+          cursor: pointer !important;
+        }
+      `}</style>
 
-      {/* El Mapa */}
-      <MapContainer
-        center={[-38.4161, -63.6167]}
-        zoom={4}
-        style={{ height: "100%", width: "100%", zIndex: 0 }}
-        minZoom={4}
-        maxZoom={15.5}
-        maxBounds={[
-          [-55.0, -73.0],
-          [-21.0, -53.0],
-        ]}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <MapEvents
-          onBoundsChange={setBounds}
-          onZoomChange={setZoom}
-          zoomMinimoParaHechos={zoomMinimoParaHechos}
-          setInfoMapa={setInfoMapa}
-          setMarcadores={setMarcadores}
+      <div className="h-[calc(100vh-4rem)] w-full relative overflow-hidden dark:bg-gray-900">
+        {/* Botón Flotante para ABRIR filtros */}
+        <button
+          onClick={() => setPanelFiltrosAbierto(true)}
+          className="absolute top-4 right-4 z-[1000] p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+          aria-label="Abrir filtros"
+        >
+          <FiltroIcono />
+        </button>
+
+        {/* El Overlay (fondo oscuro) para cerrar en móvil */}
+        {panelFiltrosAbierto && (
+          <div
+            onClick={() => setPanelFiltrosAbierto(false)}
+            className="absolute inset-0 bg-black/50 z-[1001] md:hidden"
+          ></div>
+        )}
+
+        {/* El Panel de Filtros */}
+        <FiltrosPanel
+          isOpen={panelFiltrosAbierto}
+          onClose={() => setPanelFiltrosAbierto(false)}
+          colecciones={colecciones}
+          filtros={filtrosPendientes}
+          coleccionPendiente={coleccionPendiente}
+          modoColeccionPendiente={modoColeccionPendiente}
+          coleccionAplicada={coleccionAplicada}
+          modoColeccionAplicada={modoColeccionAplicada}
+          onFiltroChange={handleFiltroChange}
+          onColeccionChange={cambiarColeccionPendiente}
+          onModoChange={cambiarModoColeccionPendiente}
+          onLimpiar={limpiarFiltros}
+          onAplicar={aplicarFiltros}
         />
 
-        {/* Popups con multimedia mejorada */}
-        {marcadores.map((hecho, index) => (
-          <Marker
-            key={index}
-            position={[parseFloat(hecho.latitud), parseFloat(hecho.longitud)]}
-          >
-            <Popup>
-              <div className="min-w-64 max-w-sm">
-                {/* Título centrado y más grande */}
-                <h4 className="font-bold text-lg text-gray-800 text-center mb-2">
-                  {hecho.titulo || "Sin título"}
-                </h4>
+        {/* El Mapa */}
+        <MapContainer
+          center={[-38.4161, -63.6167]}
+          zoom={4}
+          style={{ height: "100%", width: "100%", zIndex: 0 }}
+          minZoom={4}
+          maxZoom={15.5}
+          maxBounds={[
+            [-55.0, -73.0],
+            [-21.0, -53.0],
+          ]}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <MapEvents
+            onBoundsChange={setBounds}
+            onZoomChange={setZoom}
+            zoomMinimoParaHechos={zoomMinimoParaHechos}
+            setInfoMapa={setInfoMapa}
+            setMarcadores={setMarcadores}
+          />
 
-                {/* Descripción */}
-                <p className="text-sm text-gray-600 mb-3">
-                  <strong>Descripción:</strong>{" "}
-                  {hecho.descripcion || "Sin descripción"}
-                </p>
+          {/* Popups con multimedia mejorada */}
+          {marcadores.map((hecho, index) => (
+            <Marker
+              key={index}
+              position={[parseFloat(hecho.latitud), parseFloat(hecho.longitud)]}
+              icon={obtenerIconoParaHecho(hecho)} // ← Ícono basado en categoría
+            >
+              <Popup>
+                <div className="min-w-64 max-w-sm">
+                  {/* Título centrado y más grande */}
+                  <h4 className="font-bold text-lg text-gray-800 text-center mb-2">
+                    {hecho.titulo || "Sin título"}
+                  </h4>
 
-                {hecho.categoria && (
+                  {/* Descripción */}
                   <p className="text-sm text-gray-600 mb-3">
-                    <strong>Categoría:</strong> {hecho.categoria}
+                    <strong>Descripción:</strong>{" "}
+                    {hecho.descripcion || "Sin descripción"}
                   </p>
-                )}
 
-                <p className="text-sm text-gray-600 mb-3">
-                  <strong>Fecha:</strong>{" "}
-                  {hecho.fechaAcontecimiento
-                    ? new Date(hecho.fechaAcontecimiento).toLocaleDateString()
-                    : "No especificada"}
-                </p>
-
-                {/* Sección de Multimedia Simplificada */}
-                {hecho.archivosMultimedia &&
-                  hecho.archivosMultimedia.length > 0 && (
-                    <div className="mb-3">
-                      <button
-                        onClick={() => abrirVisor(hecho.archivosMultimedia, 0)}
-                        className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        Ver Multimedia ({hecho.archivosMultimedia.length})
-                      </button>
-                    </div>
+                  {hecho.categoria && (
+                    <p className="text-sm text-gray-600 mb-3">
+                      <strong>Categoría:</strong> {hecho.categoria}
+                    </p>
                   )}
 
-                {/* Botón de reportar más pegado */}
-                <button
-                  onClick={() => reportarHecho(hecho)}
-                  className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium"
-                >
-                  Reportar este hecho
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+                  <p className="text-sm text-gray-600 mb-3">
+                    <strong>Fecha:</strong>{" "}
+                    {hecho.fechaAcontecimiento
+                      ? new Date(hecho.fechaAcontecimiento).toLocaleDateString()
+                      : "No especificada"}
+                  </p>
 
-      {/* Visor de Multimedia */}
-      <VisorMultimedia />
+                  {/* Sección de Multimedia Simplificada */}
+                  {hecho.archivosMultimedia &&
+                    hecho.archivosMultimedia.length > 0 && (
+                      <div className="mb-3">
+                        <button
+                          onClick={() =>
+                            abrirVisor(hecho.archivosMultimedia, 0)
+                          }
+                          className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Ver Multimedia ({hecho.archivosMultimedia.length})
+                        </button>
+                      </div>
+                    )}
 
-      {/* La info como una barra flotante en la parte inferior */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[1000] p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md text-xs text-gray-700 dark:text-gray-200">
-        {infoMapa} | Zoom: {zoom.toFixed(1)}
+                  {/* Botón de reportar más pegado */}
+                  <button
+                    onClick={() => reportarHecho(hecho)}
+                    className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium"
+                  >
+                    Reportar este hecho
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+
+        {/* Visor de Multimedia */}
+        <VisorMultimedia />
+
+        {/* La info como una barra flotante en la parte inferior */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[1000] p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md text-xs text-gray-700 dark:text-gray-200">
+          {infoMapa} | Zoom: {zoom.toFixed(1)}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

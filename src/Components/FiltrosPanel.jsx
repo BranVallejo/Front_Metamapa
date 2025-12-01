@@ -1,9 +1,20 @@
-import React from 'react';
+import React from "react";
 
 // Ícono SVG para el botón de cerrar
 const CerrarIcono = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M6 18L18 6M6 6l12 12"
+    />
   </svg>
 );
 
@@ -28,7 +39,7 @@ const FiltrosPanel = ({
     <div
       className={`absolute top-0 left-0 h-full z-[1002] w-80 bg-white dark:bg-gray-800 shadow-2xl overflow-y-auto 
                   transition-transform duration-300 ease-in-out
-                  ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} // Animación
+                  ${isOpen ? "translate-x-0" : "-translate-x-full"}`} // Animación
     >
       {/* Encabezado del Panel (con botón de cerrar) */}
       <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
@@ -106,22 +117,27 @@ const FiltrosPanel = ({
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <strong>Modo:</strong>{" "}
-                    {modoColeccionPendiente === "curada" ? "Curada" : "Irrestricta"}
+                    {modoColeccionPendiente === "curada"
+                      ? "Curada"
+                      : "Irrestricta"}
                   </p>
                 </div>
               </>
             )}
-            {coleccionAplicada && coleccionAplicada.handle !== coleccionPendiente?.handle && (
-              <div className="mt-3 bg-green-50 dark:bg-gray-700 p-3 rounded border-l-4 border-blue-500">
-                <h4 className="font-medium text-blue-600 dark:text-blue-400 text-sm">
-                  Colección activa: {coleccionAplicada.titulo}
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <strong>Modo aplicado:</strong>{" "}
-                  {modoColeccionAplicada === "curada" ? "Curada" : "Irrestricta"}
-                </p>
-              </div>
-            )}
+            {coleccionAplicada &&
+              coleccionAplicada.handle !== coleccionPendiente?.handle && (
+                <div className="mt-3 bg-green-50 dark:bg-gray-700 p-3 rounded border-l-4 border-blue-500">
+                  <h4 className="font-medium text-blue-600 dark:text-blue-400 text-sm">
+                    Colección activa: {coleccionAplicada.titulo}
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <strong>Modo aplicado:</strong>{" "}
+                    {modoColeccionAplicada === "curada"
+                      ? "Curada"
+                      : "Irrestricta"}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -181,7 +197,7 @@ const FiltrosPanel = ({
                 <option value="calor extremo">Calor extremo</option>
                 <option value="sequia">Sequía</option>
                 <option value="derrumbes">Derrumbes</option>
-                <option value="actividad volcnica">Actividad volcánica</option>
+                <option value="actividad volcanica">Actividad volcánica</option>
                 <option value="contaminación">Contaminación</option>
                 <option value="evento sanitario">Evento sanitario</option>
                 <option value="derrame">Derrame</option>
@@ -196,7 +212,9 @@ const FiltrosPanel = ({
               <select
                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={filtros.contieneMultimedia}
-                onChange={(e) => onFiltroChange("contieneMultimedia", e.target.value)}
+                onChange={(e) =>
+                  onFiltroChange("contieneMultimedia", e.target.value)
+                }
               >
                 <option value="">Todos</option>
                 <option value="true">Sí</option>
