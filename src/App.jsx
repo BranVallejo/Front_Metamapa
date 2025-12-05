@@ -12,6 +12,7 @@ import EditarHecho from "./pages/EditarHecho";
 import PaginaReporte from "./pages/SolicitudEliminacion";
 import ModuloSolicitudesAdmin from "./pages/TodasSolicitudes";
 import "leaflet/dist/leaflet.css";
+import Estadisticas from "./pages/Estadisticas";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/hechos/:id" element={<HechoDetalle />} />
             <Route path="/colecciones" element={<GestionColecciones />} />
             <Route path="/hechos/editar/:id" element={<EditarHecho />} />
+            <Route path="/estadisticas" element={<Estadisticas />} />
 
             <Route
               path="/solicitarEliminacion/:idHecho"
