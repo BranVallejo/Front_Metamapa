@@ -116,34 +116,40 @@ const Login = () => {
     }, 120000); // 2 minutos
   };
 
-  // Login normal
+  // Login normal - VERSIÓN CORREGIDA
+  // Login normal - VERSIÓN CORREGIDA
   const handleNormalLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const response = await fetch(
-      `${
-        import.meta.env.VITE_URL_INICIAL_GESTOR
-      }/gestordatos/contribuyentes/login`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      }
-    );
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_URL_INICIAL_GESTOR}/contribuyentes/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
 
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data));
-      navigate("/");
-    } else {
-      const errorText = await response.text();
-      setError(errorText || "Error en login");
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data));
+        navigate("/");
+      } else {
+        setError("Email o contraseña incorrectos");
+      }
+    } catch (error) {
+      console.error("Error de login:", error);
+      setError("Error de conexión con el servidor");
+    } finally {
+      // ESTO ES LO MÁS IMPORTANTE: siempre resetear el loading
+      setLoading(false);
     }
   };
 
