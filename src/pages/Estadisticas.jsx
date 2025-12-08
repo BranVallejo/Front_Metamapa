@@ -6,7 +6,10 @@ import {
   mockCategoriaMasReportada,
   mockHoraPorCategoria,
   mockSpam,
+  mockProvinciaPorCategoria
 } from "../data/mockEstadisticas";
+
+
 
 // Importamos los componentes nuevos
 import FiltrosFecha from "../Components/Estadisticas/FiltrosFecha";
@@ -15,6 +18,8 @@ import CategoriasPie from "../Components/Estadisticas/CategoriasPie";
 import HorariosLine from "../Components/Estadisticas/HorariosLine";
 import SpamCard from "../Components/Estadisticas/SpamCard";
 import ColeccionGanadora from "../Components/Estadisticas/ColleccionGanadora";
+import ProvinciaPorCategoria from "../Components/Estadisticas/ProvinciaPorCategoria";
+
 
 const Estadisticas = () => {
   // --- LÓGICA DE FECHAS POR DEFECTO ---
@@ -32,6 +37,7 @@ const Estadisticas = () => {
   const [categoriasReportadas, setCategoriasReportadas] = useState(mockCategoriaMasReportada);
   const [horasCategoria, setHorasCategoria] = useState(mockHoraPorCategoria);
   const [spamData, setSpamData] = useState(mockSpam);
+  const [provinciaPorCategoria, setProvinciaPorCategoria] = useState(mockProvinciaPorCategoria);
 
   // Función para simular el filtrado (aquí irían tus fetchs reales)
   const handleFiltrar = () => {
@@ -45,9 +51,16 @@ const Estadisticas = () => {
     alert(`Descargando CSV de: ${endpointName} (${fechaDesde} - ${fechaHasta})`);
   };
 
+  // Función para convertir "2025-11-05" a "05/11/2025" sin líos de zona horaria
+  const formatearFechaString = (fechaString) => {
+    if (!fechaString) return "-";
+    const [anio, mes, dia] = fechaString.split('-');
+    return `${dia}/${mes}/${anio}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10 transition-colors duration-300">
-      
+
       {/* --- HEADER Y FILTROS --- */}
       <header className="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div>
@@ -59,42 +72,50 @@ const Estadisticas = () => {
           </p>
           {/* Feedback visual del periodo */}
           <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 font-medium">
-            Viendo datos del <span className="font-bold">{new Date(fechaDesde).toLocaleDateString('es-AR')}</span> al <span className="font-bold">{new Date(fechaHasta).toLocaleDateString('es-AR')}</span>
+            Viendo datos del <span className="font-bold">{formatearFechaString(fechaDesde)}</span> al <span className="font-bold">{formatearFechaString(fechaHasta)}</span>
           </p>
         </div>
-        
+
         {/* Componente de Filtros Modularizado */}
-        <FiltrosFecha 
-          desde={fechaDesde} 
-          hasta={fechaHasta} 
-          setDesde={setFechaDesde} 
-          setHasta={setFechaHasta} 
-          onFiltrar={handleFiltrar} 
+        <FiltrosFecha
+          desde={fechaDesde}
+          hasta={fechaHasta}
+          setDesde={setFechaDesde}
+          setHasta={setFechaHasta}
+          onFiltrar={handleFiltrar}
         />
       </header>
 
       {/* --- GRID DE GRÁFICOS --- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
+
         <div className="lg:col-span-2"> {/* Hacemos que ocupe todo el ancho para que se luzca */}
-          <ColeccionGanadora 
-                data={rankingProvincias} 
+          <ColeccionGanadora
+            data={rankingProvincias}
           />
         </div>
 
-        <CategoriasPie 
-          data={categoriasReportadas} 
-          onExport={() => descargarCSV("categoria-mas-reportada")} 
+        <CategoriasPie
+          data={categoriasReportadas}
+          onExport={() => descargarCSV("categoria-mas-reportada")}
         />
 
-        <HorariosLine 
-          data={horasCategoria} 
-          onExport={() => descargarCSV("hora-por-categoria")} 
+        {/* Focos por Categoría (Grilla) */}
+        <div className="lg:col-span-2">
+          <ProvinciaPorCategoria
+            data={provinciaPorCategoria}
+            onExport={() => descargarCSV("provincia-por-categoria")}
+          />
+        </div>
+        
+        <HorariosLine
+          data={horasCategoria}
+          onExport={() => descargarCSV("hora-por-categoria")}
         />
 
-        <SpamCard 
-          data={spamData} 
-          onExport={() => descargarCSV("cantidad-solicitudes-spam")} 
+        <SpamCard
+          data={spamData}
+          onExport={() => descargarCSV("cantidad-solicitudes-spam")}
         />
 
       </div>
