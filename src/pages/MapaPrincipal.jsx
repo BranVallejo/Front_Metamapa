@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   useMapEvents,
+  ZoomControl,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -220,8 +221,8 @@ const MapaPrincipal = () => {
                 {tipoArchivo === "image"
                   ? "Imagen"
                   : tipoArchivo === "video"
-                  ? "Video"
-                  : "Archivo"}{" "}
+                    ? "Video"
+                    : "Archivo"}{" "}
                 {imagenActual + 1} de {archivosMultimediaActuales.length}
               </p>
             </div>
@@ -365,11 +366,10 @@ const MapaPrincipal = () => {
                   <button
                     key={idx}
                     onClick={() => setImagenActual(idx)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 transition-all duration-200 ${
-                      idx === imagenActual
-                        ? "border-blue-500 ring-2 ring-blue-500/30"
-                        : "border-gray-600 hover:border-gray-500"
-                    }`}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 transition-all duration-200 ${idx === imagenActual
+                      ? "border-blue-500 ring-2 ring-blue-500/30"
+                      : "border-gray-600 hover:border-gray-500"
+                      }`}
                   >
                     {tipo === "image" ? (
                       <img
@@ -569,7 +569,7 @@ const MapaPrincipal = () => {
         }
       `}</style>
 
-      <div className="h-[calc(100vh-4rem)] w-full relative overflow-hidden dark:bg-gray-900">
+      <div className="h-screen w-full relative overflow-hidden dark:bg-gray-900">
         {/* Botón Flotante para ABRIR filtros */}
         <button
           onClick={() => setPanelFiltrosAbierto(true)}
@@ -608,6 +608,7 @@ const MapaPrincipal = () => {
         <MapContainer
           center={[-38.4161, -63.6167]}
           zoom={4}
+          zoomControl={false} // <--- Desactivar el default (que está arriba a la izquierda)
           style={{ height: "100%", width: "100%", zIndex: 0 }}
           minZoom={4}
           maxZoom={15.5}
@@ -616,6 +617,7 @@ const MapaPrincipal = () => {
             [-21.0, -53.0],
           ]}
         >
+          <ZoomControl position="bottomright" />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <MapEvents
             onBoundsChange={setBounds}
