@@ -118,15 +118,6 @@ return (
               Análisis de hechos y reportes del sistema.
             </p>
           </div>
-
-          {/* Restauré el componente de filtros que faltaba */}
-          <FiltrosFecha
-            desde={fechaDesde}
-            hasta={fechaHasta}
-            setDesde={setFechaDesde}
-            setHasta={setFechaHasta}
-            onFiltrar={handleFiltrar}
-          />
         </header>
 
         {/* Loading Spinner o Gráficos */}
