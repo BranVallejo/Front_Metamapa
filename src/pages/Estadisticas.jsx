@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import FiltrosFecha from "../Components/Estadisticas/FiltrosFecha";
 import RankingProvincias from "../Components/Estadisticas/RankingProvincias"; // (Si usas el viejo)
 import ColeccionGanadora from "../Components/Estadisticas/ColleccionGanadora"; // (El nuevo)
-import CategoriasPie from "../Components/Estadisticas/CategoriasPie";
+import CategoriaDestacada from "../Components/Estadisticas/CategoriaDestacada";
 import HorariosLine from "../Components/Estadisticas/HorariosLine";
 import SpamCard from "../Components/Estadisticas/SpamCard";
 import ProvinciaPorCategoria from "../Components/Estadisticas/ProvinciaPorCategoria";
@@ -101,7 +101,7 @@ const Estadisticas = () => {
     return `${dia}/${mes}/${anio}`;
   };
 
-  return (
+return (
     <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
       {/* Fondo Animado */}
       <FondoChill />
@@ -117,18 +117,9 @@ const Estadisticas = () => {
             <p className="text-gray-600 dark:text-gray-300 mt-1">
               Análisis de hechos y reportes del sistema.
             </p>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mt-2 font-medium">
-              Viendo datos del{" "}
-              <span className="font-bold">
-                {formatearFechaString(fechaDesde)}
-              </span>{" "}
-              al{" "}
-              <span className="font-bold">
-                {formatearFechaString(fechaHasta)}
-              </span>
-            </p>
           </div>
 
+          {/* Restauré el componente de filtros que faltaba */}
           <FiltrosFecha
             desde={fechaDesde}
             hasta={fechaHasta}
@@ -145,18 +136,30 @@ const Estadisticas = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* 1. Colecciones (Ganadora) */}
+            
+            {/* FILA 1: Colecciones (Ancho completo) */}
             <div className="lg:col-span-2">
               <ColeccionGanadora data={rankingProvincias} />
             </div>
 
-            {/* 2. Categorías (Torta) */}
-            <CategoriasPie
-              data={categoriasReportadas}
-              onExport={() => descargarCSV("categoria-mas-reportada")}
-            />
+            {/* FILA 2: KPIs (Mitad y Mitad) */}
+            {/* Categoria Destacada */}
+            <div className="lg:col-span-1 h-full">
+              <CategoriaDestacada
+                data={categoriasReportadas}
+                onExport={() => descargarCSV("categoria-mas-reportada")}
+              />
+            </div>
 
-            {/* 3. Provincias por Categoría (Grilla Cards) */}
+            {/* Spam Card (Ahora ocupa el hueco vacío) */}
+            <div className="lg:col-span-1 h-full">
+              <SpamCard
+                data={spamData}
+                onExport={() => descargarCSV("cantidad-solicitudes-spam")}
+              />
+            </div>
+
+            {/* FILA 3: Provincias por Categoría (Ancho completo) */}
             <div className="lg:col-span-2">
               <ProvinciaPorCategoria
                 data={provinciaPorCategoria}
@@ -164,21 +167,14 @@ const Estadisticas = () => {
               />
             </div>
 
-            {/* 4. Horarios (Líneas) */}
+            {/* FILA 4: Horarios (Ancho completo) */}
             <div className="lg:col-span-2">
               <HorariosLine
                 data={horasCategoria}
                 onExport={() => descargarCSV("hora-por-categoria")}
               />
             </div>
-
-            {/* 5. Spam (Card) */}
-            <div className="lg:col-span-2">
-              <SpamCard
-                data={spamData}
-                onExport={() => descargarCSV("cantidad-solicitudes-spam")}
-              />
-            </div>
+            
           </div>
         )}
       </div>
