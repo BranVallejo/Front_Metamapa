@@ -12,27 +12,33 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// --- CSS FIX PARA EL MAPA ---
-// Este componente inyecta estilos globales para mover los controles del mapa (Leaflet/Google)
-// y evitar que queden tapados por los navbars.
+// --- CSS FIX PARA EL MAPA (AJUSTADO) ---
+// Se han aumentado los valores para evitar solapamientos en móviles
 const MapLayoutFixes = () => (
   <style>{`
     /* MÓVIL Y TABLET (Pantallas menores a 1024px) */
     @media (max-width: 1024px) {
-      /* Empujar controles inferiores (Zoom, info) hacia arriba para no chocar con la barra de navegación */
-      .leaflet-bottom, 
-      .mapboxgl-ctrl-bottom-left, 
-      .mapboxgl-ctrl-bottom-right,
-      .map-controls-bottom { 
-        bottom: 80px !important; 
-      }
-
-      /* Empujar controles superiores (Filtro, capas) hacia abajo para no chocar con el Header */
+      /* 1. MOVER CONTROLES DE ARRIBA (Filtros, Capas) */
+      /* Los bajamos 120px para que no queden debajo del Header */
       .leaflet-top,
       .mapboxgl-ctrl-top-left, 
       .mapboxgl-ctrl-top-right,
       .map-controls-top {
-        top: 90px !important;
+        top: 120px !important;
+      }
+
+      /* 2. MOVER CONTROLES DE ABAJO (Zoom, Aviso de Zoom Bajo, Atribución) */
+      /* Los subimos para que no los tape la barra de navegación inferior */
+      .leaflet-bottom, 
+      .mapboxgl-ctrl-bottom-left, 
+      .mapboxgl-ctrl-bottom-right,
+      .map-controls-bottom { 
+        bottom: 90px !important; 
+      }
+      
+      /* Fix específico para carteles de aviso flotantes (si usan clases estándar de leaflet) */
+      .leaflet-control-container .leaflet-bottom {
+        margin-bottom: 20px !important;
       }
     }
   `}</style>
@@ -40,9 +46,10 @@ const MapLayoutFixes = () => (
 
 // --- ICONOS SVG (Line Icons) ---
 const Icons = {
-  Home: ({ className }) => (
+  // CAMBIO AQUÍ: Usamos un icono de mapa en lugar de la casa
+  Map: ({ className }) => (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
     </svg>
   ),
   MapPin: ({ className }) => (
@@ -168,7 +175,8 @@ const ProfessionalHeader = () => {
   };
 
   const navLinks = [
-    { path: "/", label: "Mapa", Icon: Icons.Home, show: true },
+    // CAMBIO AQUÍ: Usamos Icons.Map
+    { path: "/", label: "Mapa", Icon: Icons.Map, show: true },
     { path: "/misHechos", label: "Mis Hechos", Icon: Icons.MapPin, show: isLoggedIn },
     { path: "/colecciones", label: "Colecciones", Icon: Icons.Folder, show: esAdmin() },
     { path: "/solicitudes-eliminacion", label: "Solicitudes", Icon: Icons.Inbox, show: esAdmin() },

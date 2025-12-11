@@ -554,7 +554,7 @@ const MapaPrincipal = () => {
 
   return (
     <>
-      {/* CSS para arreglar el cursor */}
+      {/* CSS para arreglar el cursor y mover los controles en móvil */}
       <style jsx>{`
         .leaflet-container {
           cursor: default !important;
@@ -567,13 +567,23 @@ const MapaPrincipal = () => {
         .marker-icon-custom {
           cursor: pointer !important;
         }
+
+        /* AJUSTE PARA MÓVIL: Mueve los botones +/- de Zoom hacia arriba para no chocar con el nav */
+        @media (max-width: 1024px) {
+          .leaflet-bottom {
+             bottom: 90px !important;
+          }
+        }
       `}</style>
 
       <div className="h-screen w-full relative overflow-hidden dark:bg-gray-900">
-        {/* Botón Flotante para ABRIR filtros */}
+        
+        {/* --- BOTÓN FLOTANTE FILTROS (CORREGIDO) --- 
+            Uso: top-28 para móvil (bajar) y lg:top-4 para desktop (original) 
+        */}
         <button
           onClick={() => setPanelFiltrosAbierto(true)}
-          className="absolute top-4 right-4 z-[1000] p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="absolute top-28 lg:top-4 right-4 z-[1000] p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
           aria-label="Abrir filtros"
         >
           <FiltroIcono />
@@ -704,8 +714,10 @@ const MapaPrincipal = () => {
         {/* Visor de Multimedia */}
         <VisorMultimedia />
 
-        {/* La info como una barra flotante en la parte inferior */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[1000] p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md text-xs text-gray-700 dark:text-gray-200">
+        {/* --- BARRA FLOTANTE INFO (CORREGIDO) --- 
+            Uso: bottom-24 para móvil (subir) y lg:bottom-2 para desktop (original) 
+        */}
+        <div className="absolute bottom-24 lg:bottom-2 left-1/2 -translate-x-1/2 z-[1000] p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md text-xs text-gray-700 dark:text-gray-200">
           {infoMapa} | Zoom: {zoom.toFixed(1)}
         </div>
       </div>
