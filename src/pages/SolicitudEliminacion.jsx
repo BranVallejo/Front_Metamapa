@@ -42,18 +42,18 @@ const PaginaReporte = () => {
   };
 
   const enviarReporte = async () => {
-    // Validación con Toast Warning
     if (!descripcionReporte.trim()) {
       toast.warning("Falta información", {
-        description: "Por favor, describe el motivo de tu reporte antes de enviar."
+        description:
+          "Por favor, describe el motivo de tu reporte antes de enviar.",
       });
       return;
     }
 
     setEnviando(true);
-    
-    // 1. Toast de Carga
-    const toastId = toast.loading("Enviando reporte...");
+
+    // Mostrar toast de carga y guardar la función para cerrarlo
+    const dismiss = toast.loading("Enviando reporte...");
 
     try {
       const idHechoNumerico = parseInt(idHecho);
@@ -62,52 +62,51 @@ const PaginaReporte = () => {
         throw new Error("ID del hecho no es un número válido");
       }
 
+      const userData = JSON.parse(localStorage.getItem("user"));
+
       const requestBody = {
         idhecho: idHechoNumerico,
         justificacion: descripcionReporte.trim(),
+        usuarioId: userData.userId,
       };
-
-      console.log("📤 Body que se envía:", requestBody);
 
       const response = await fetch(
         "http://localhost:8500/gestordatos/publica/solicitudes",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestBody),
         }
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
+        throw new Error(errorText);
       }
 
       const resultado = await response.json();
-      console.log("✅ Reporte enviado:", resultado);
+      console.log("Reporte enviado:", resultado);
 
-      // 2. Éxito: Actualizamos el toast
-      toast.success("¡Reporte enviado exitosamente!", {
-        id: toastId,
+      // Cerrar el toast de carga
+      toast.dismiss(dismiss);
+
+      // Mostrar éxito
+      toast.success("Reporte enviado correctamente", {
         description: "Gracias por tu colaboración.",
-        duration: 3000,
       });
 
-      // Navegar después de un momento
       setTimeout(() => {
         navigate("/");
       }, 1500);
-
     } catch (error) {
-      console.error("❌ Error enviando reporte:", error);
-      
-      // 3. Error: Actualizamos el toast
+      console.error("Error enviando reporte:", error);
+
+      // Cerrar el toast de carga
+      toast.dismiss(dismiss);
+
+      // Mostrar el error
       toast.error("No se pudo enviar el reporte", {
-        id: toastId,
-        description: error.message || "Inténtalo de nuevo más tarde.",
-        duration: 5000,
+        description: error.message,
       });
     } finally {
       setEnviando(false);
@@ -133,7 +132,6 @@ const PaginaReporte = () => {
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
-      
       {/* 2. TOASTER DE SONNER */}
       <Toaster richColors position="top-right" />
 
