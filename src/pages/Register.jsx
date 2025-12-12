@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// 1. IMPORTAMOS SONNER
+// 👇 1. Importamos el fondo
+import FondoMapaConectado from "../Components/FondoDinamico/FondoMapaConectado.jsx";
+// 👇 2. Importamos Sonner
 import { Toaster, toast } from "sonner";
 
 const Register = () => {
@@ -228,31 +230,43 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
+    // Contenedor principal con relative y overflow-hidden para el fondo
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
       
       {/* 2. COMPONENTE TOASTER */}
       <Toaster richColors position="top-right" />
 
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
+      {/* FONDO DINÁMICO */}
+      <FondoMapaConectado />
+
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-md">
-          {/* Card del Registro */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          
+          {/* ✨ GLASS FACHERO (Card del Registro) ✨ */}
+          <div className="
+            backdrop-blur-xl 
+            bg-white/30 dark:bg-black/50 
+            rounded-2xl shadow-2xl p-8 
+            border border-white/40 dark:border-gray-700/50
+            transition-all duration-300
+          ">
+            
             {/* Logo y Título */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-blue-800 mb-2">
+              <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-300 mb-2 drop-shadow-sm">
                 MetaMapa
               </h1>
-              <h2 className="text-2xl font-semibold text-gray-800">
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
                 Crear Cuenta
               </h2>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-700 dark:text-gray-300 mt-2 font-medium">
                 Únete a nuestra comunidad colaborativa
               </p>
             </div>
 
-            {/* Mensaje de error en caja (opcional, se mantiene por accesibilidad) */}
+            {/* Mensaje de error en caja */}
             {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              <div className="mb-4 p-3 bg-red-100/90 border border-red-400 text-red-800 rounded-lg backdrop-blur-sm">
                 {error}
               </div>
             )}
@@ -262,11 +276,11 @@ const Register = () => {
               <button
                 onClick={handleGoogleLogin}
                 disabled={googleLoading || loading}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-white/50 dark:border-gray-600 rounded-lg hover:bg-white/60 dark:hover:bg-gray-700/80 font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-white/70 dark:bg-gray-800/60 text-gray-800 dark:text-gray-100 transition-all backdrop-blur-sm shadow-sm hover:shadow-md"
               >
                 {googleLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 dark:border-white"></div>
                     Procesando...
                   </>
                 ) : (
@@ -295,10 +309,10 @@ const Register = () => {
               </button>
 
               {googleLoading && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-3 p-3 bg-blue-50/80 border border-blue-200 rounded-lg backdrop-blur-sm">
                   <div className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-blue-500 mr-2"
+                      className="w-5 h-5 text-blue-600 mr-2"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -308,7 +322,7 @@ const Register = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-sm text-blue-700">
+                    <span className="text-sm text-blue-800 font-medium">
                       Completa el registro en la ventana emergente...
                     </span>
                   </div>
@@ -319,10 +333,10 @@ const Register = () => {
             {/* Separador */}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-gray-400/50 dark:border-gray-500/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
+                <span className="px-2 bg-transparent text-gray-700 dark:text-gray-300 font-medium bg-opacity-0 backdrop-blur-md rounded">
                   O regístrate con tus datos
                 </span>
               </div>
@@ -335,7 +349,7 @@ const Register = () => {
                 <div>
                   <label
                     htmlFor="nombre"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2"
                   >
                     Nombre *
                   </label>
@@ -346,7 +360,7 @@ const Register = () => {
                     required
                     value={formData.nombre}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                     placeholder="Tu nombre"
                     disabled={loading || googleLoading}
                   />
@@ -355,7 +369,7 @@ const Register = () => {
                 <div>
                   <label
                     htmlFor="apellido"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2"
                   >
                     Apellido *
                   </label>
@@ -366,7 +380,7 @@ const Register = () => {
                     required
                     value={formData.apellido}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                     placeholder="Tu apellido"
                     disabled={loading || googleLoading}
                   />
@@ -377,7 +391,7 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="dni"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2"
                 >
                   DNI *
                 </label>
@@ -388,7 +402,7 @@ const Register = () => {
                   required
                   value={formData.dni}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                   placeholder="Tu número de documento"
                   disabled={loading || googleLoading}
                 />
@@ -398,7 +412,7 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2"
                 >
                   Correo Electrónico *
                 </label>
@@ -409,7 +423,7 @@ const Register = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                   placeholder="tu@ejemplo.com"
                   disabled={loading || googleLoading}
                 />
@@ -419,7 +433,7 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2"
                 >
                   Contraseña *
                 </label>
@@ -430,12 +444,12 @@ const Register = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                   placeholder="••••••••"
                   minLength="6"
                   disabled={loading || googleLoading}
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-700 dark:text-gray-400 font-medium">
                   Mínimo 6 caracteres
                 </p>
               </div>
@@ -444,7 +458,7 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2"
                 >
                   Confirmar Contraseña *
                 </label>
@@ -455,7 +469,7 @@ const Register = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                   placeholder="••••••••"
                   disabled={loading || googleLoading}
                 />
@@ -470,24 +484,24 @@ const Register = () => {
                   required
                   checked={formData.aceptaTerminos}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded bg-white/60"
                   disabled={loading || googleLoading}
                 />
                 <label
                   htmlFor="aceptaTerminos"
-                  className="ml-2 block text-sm text-gray-700"
+                  className="ml-2 block text-sm text-gray-800 dark:text-gray-200"
                 >
                   Acepto los{" "}
                   <a
                     href="#"
-                    className="text-blue-600 hover:text-blue-500 font-medium"
+                    className="text-blue-700 dark:text-blue-300 hover:text-blue-500 font-bold"
                   >
                     Términos de Servicio
                   </a>{" "}
                   y la{" "}
                   <a
                     href="#"
-                    className="text-blue-600 hover:text-blue-500 font-medium"
+                    className="text-blue-700 dark:text-blue-300 hover:text-blue-500 font-bold"
                   >
                     Política de Privacidad
                   </a>
@@ -498,10 +512,10 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className={`w-full py-3 px-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-semibold shadow-md ${
+                className={`w-full py-3 px-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold shadow-md backdrop-blur-sm ${
                   loading || googleLoading
-                    ? "bg-gray-400 cursor-not-allowed text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                    ? "bg-gray-400/80 cursor-not-allowed text-white"
+                    : "bg-blue-600/90 hover:bg-blue-700/90 hover:shadow-lg text-white"
                 }`}
               >
                 {loading ? (
@@ -535,12 +549,12 @@ const Register = () => {
             </form>
 
             {/* Enlace a Login */}
-            <div className="mt-8 text-center">
-              <p className="text-gray-600">
+            <div className="mt-8 text-center border-t border-gray-300/50 dark:border-gray-600/50 pt-4">
+              <p className="text-gray-800 dark:text-gray-300">
                 ¿Ya tienes una cuenta?{" "}
                 <Link
                   to="/login"
-                  className="text-blue-600 hover:text-blue-500 font-semibold"
+                  className="text-blue-700 dark:text-blue-300 hover:text-blue-500 font-bold hover:underline"
                 >
                   Inicia sesión aquí
                 </Link>
@@ -549,11 +563,11 @@ const Register = () => {
           </div>
 
           {/* Información adicional */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="mt-8 text-center relative z-20">
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-medium px-4 py-2 rounded-lg bg-white/30 dark:bg-black/30 backdrop-blur-md inline-block">
               * Campos obligatorios. Los datos personales se manejan según
               nuestra{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-500">
+              <a href="#" className="text-blue-700 dark:text-blue-300 hover:text-blue-500 font-bold underline">
                 Política de Privacidad
               </a>
             </p>

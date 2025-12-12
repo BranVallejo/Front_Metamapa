@@ -185,7 +185,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 relative overflow-hidden transition-colors duration-300">
+    // Quitamos bg-gray-50/900 sólido para asegurar que el fondo del mapa predomine si hay gaps
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
       
       {/* 👇 3. TOASTER DE SONNER */}
       <Toaster richColors position="top-right" />
@@ -194,22 +195,30 @@ const Login = () => {
 
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-md">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+          
+          {/* ✨ AQUÍ ESTÁ EL EFECTO GLASS FACHERO ✨ */}
+          <div className="
+            backdrop-blur-xl 
+            bg-white/30 dark:bg-black/50 
+            rounded-2xl shadow-2xl p-8 
+            border border-white/40 dark:border-gray-700/50
+            transition-all duration-300
+          ">
             
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-blue-800 dark:text-blue-400 mb-2">
+              <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-300 mb-2 drop-shadow-sm">
                 MetaMapa
               </h1>
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
                 Iniciar Sesión
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">Accede a tu cuenta</p>
+              <p className="text-gray-700 dark:text-gray-300 mt-2 font-medium">Accede a tu cuenta</p>
             </div>
 
-            {/* Error en caja (opcional, se mantiene por accesibilidad) */}
+            {/* Error en caja */}
             {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              <div className="mb-4 p-3 bg-red-100/90 border border-red-400 text-red-800 rounded-lg backdrop-blur-sm">
                 <div className="flex items-center">
                   <svg
                     className="w-5 h-5 mr-2"
@@ -232,7 +241,7 @@ const Login = () => {
               <button
                 onClick={handleGoogleLogin}
                 disabled={googleLoading || loading}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-white/50 dark:border-gray-600 rounded-lg hover:bg-white/60 dark:hover:bg-gray-700/80 font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-white/70 dark:bg-gray-800/60 text-gray-800 dark:text-gray-100 transition-all backdrop-blur-sm shadow-sm hover:shadow-md"
               >
                 {googleLoading ? (
                   <>
@@ -265,9 +274,9 @@ const Login = () => {
               </button>
 
               {googleLoading && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-3 p-3 bg-blue-50/80 border border-blue-200 rounded-lg backdrop-blur-sm">
                   <div className="flex items-center">
-                    <span className="text-sm text-blue-700">
+                    <span className="text-sm text-blue-800 font-medium">
                       Completa el login en la ventana emergente...
                     </span>
                   </div>
@@ -278,10 +287,10 @@ const Login = () => {
             {/* Separador */}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                <div className="w-full border-t border-gray-400/50 dark:border-gray-500/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                <span className="px-2 bg-transparent text-gray-700 dark:text-gray-300 font-medium bg-opacity-0 backdrop-blur-md rounded">
                   O ingresa con email
                 </span>
               </div>
@@ -290,7 +299,7 @@ const Login = () => {
             {/* Formulario normal */}
             <form onSubmit={handleNormalLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">
                   Email
                 </label>
                 <input
@@ -298,14 +307,16 @@ const Login = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  // Inputs semitransparentes para seguir el estilo glass
+                  className="w-full px-3 py-2 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 placeholder-gray-500 backdrop-blur-sm transition-all"
                   required
                   disabled={loading || googleLoading}
+                  placeholder="tu@email.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">
                   Contraseña
                 </label>
                 <input
@@ -313,9 +324,10 @@ const Login = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300/60 dark:border-gray-600/60 rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm transition-all"
                   required
                   disabled={loading || googleLoading}
+                  placeholder="••••••••"
                 />
               </div>
 
@@ -325,33 +337,33 @@ const Login = () => {
                   name="remember"
                   checked={formData.remember}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 bg-white/60"
                   disabled={loading || googleLoading}
                 />
-                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">Recordarme</label>
+                <label className="ml-2 text-sm text-gray-800 dark:text-gray-200 font-medium">Recordarme</label>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="w-full py-2 px-4 bg-blue-600/90 hover:bg-blue-700/90 text-white font-semibold rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 transition-all backdrop-blur-sm"
               >
                 {loading ? "Iniciando..." : "Iniciar Sesión"}
               </button>
             </form>
 
             {/* Link a registro */}
-            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
-              <p className="text-gray-600 dark:text-gray-400">
+            <div className="mt-6 pt-4 border-t border-gray-300/50 dark:border-gray-600/50 text-center">
+              <p className="text-gray-800 dark:text-gray-300">
                 ¿No tienes cuenta?{" "}
-                <Link to="/register" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                <Link to="/register" className="text-blue-700 dark:text-blue-300 font-bold hover:underline">
                   Regístrate
                 </Link>
               </p>
             </div>
 
             {/* Debug con Toast */}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-4 pt-4 border-t border-gray-300/50 dark:border-gray-600/50">
               <button
                 onClick={() => {
                   const token = localStorage.getItem("token");
@@ -361,7 +373,7 @@ const Login = () => {
                     toast.error("❌ No hay token almacenado");
                   }
                 }}
-                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors font-medium"
               >
                 Verificar token
               </button>
