@@ -12,14 +12,11 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// --- CSS FIX PARA EL MAPA (AJUSTADO) ---
-// Se han aumentado los valores para evitar solapamientos en móviles
+// --- CSS FIX PARA EL MAPA ---
 const MapLayoutFixes = () => (
   <style>{`
     /* MÓVIL Y TABLET (Pantallas menores a 1024px) */
     @media (max-width: 1024px) {
-      /* 1. MOVER CONTROLES DE ARRIBA (Filtros, Capas) */
-      /* Los bajamos 120px para que no queden debajo del Header */
       .leaflet-top,
       .mapboxgl-ctrl-top-left, 
       .mapboxgl-ctrl-top-right,
@@ -27,8 +24,6 @@ const MapLayoutFixes = () => (
         top: 120px !important;
       }
 
-      /* 2. MOVER CONTROLES DE ABAJO (Zoom, Aviso de Zoom Bajo, Atribución) */
-      /* Los subimos para que no los tape la barra de navegación inferior */
       .leaflet-bottom, 
       .mapboxgl-ctrl-bottom-left, 
       .mapboxgl-ctrl-bottom-right,
@@ -36,7 +31,6 @@ const MapLayoutFixes = () => (
         bottom: 90px !important; 
       }
       
-      /* Fix específico para carteles de aviso flotantes (si usan clases estándar de leaflet) */
       .leaflet-control-container .leaflet-bottom {
         margin-bottom: 20px !important;
       }
@@ -44,9 +38,8 @@ const MapLayoutFixes = () => (
   `}</style>
 );
 
-// --- ICONOS SVG (Line Icons) ---
+// --- ICONOS SVG ---
 const Icons = {
-  // CAMBIO AQUÍ: Usamos un icono de mapa en lugar de la casa
   Map: ({ className }) => (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -127,14 +120,12 @@ const ProfessionalHeader = () => {
   const location = useLocation();
   const userMenuRef = useRef(null);
 
-  // Detectar Scroll
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Auth Check
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem("token");
@@ -150,7 +141,6 @@ const ProfessionalHeader = () => {
     checkAuth();
   }, [location]);
 
-  // Click Outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -175,7 +165,6 @@ const ProfessionalHeader = () => {
   };
 
   const navLinks = [
-    // CAMBIO AQUÍ: Usamos Icons.Map
     { path: "/", label: "Mapa", Icon: Icons.Map, show: true },
     { path: "/misHechos", label: "Mis Hechos", Icon: Icons.MapPin, show: isLoggedIn },
     { path: "/colecciones", label: "Colecciones", Icon: Icons.Folder, show: esAdmin() },
@@ -187,9 +176,7 @@ const ProfessionalHeader = () => {
     <>
       <MapLayoutFixes />
 
-      {/* ==============================================
-          HEADER SUPERIOR
-         ============================================== */}
+      {/* --- HEADER SUPERIOR --- */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -224,7 +211,7 @@ const ProfessionalHeader = () => {
             ))}
           </nav>
 
-          {/* ACCIONES (Theme + User/Auth) */}
+          {/* ACCIONES */}
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="scale-90 hover:scale-100 transition-transform">
                 <ThemeToggle />
@@ -232,14 +219,12 @@ const ProfessionalHeader = () => {
 
             {!isLoggedIn ? (
               <div className="flex items-center gap-1 sm:gap-2">
-                {/* Botón Entrar: Visible siempre, ajustado para móvil */}
                 <Link
                   to="/login"
                   className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-blue-600 transition-colors whitespace-nowrap"
                 >
                   Entrar
                 </Link>
-                {/* Botón Unirse: Visible siempre, ajustado para móvil */}
                 <Link
                   to="/register"
                   className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all whitespace-nowrap"
@@ -291,9 +276,7 @@ const ProfessionalHeader = () => {
         </div>
       </motion.header>
 
-      {/* ==============================================
-          BOTTOM NAVIGATION BAR (Mobile & Tablet)
-         ============================================== */}
+      {/* --- NAVBAR INFERIOR (MÓVIL) --- */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe safe-area-bottom shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
         <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
           {navLinks.map((link) => (
@@ -310,9 +293,13 @@ const ProfessionalHeader = () => {
         </div>
       </nav>
 
-      {/* Spacers */}
+      {/* --- SPACERS --- */}
+      {/* Spacer SUPERIOR para el header fijo */}
       <div className="h-24 md:h-28" />
-      <div className="lg:hidden h-20" />
+      
+      {/* 🛑 ELIMINAMOS EL SPACER INFERIOR DE AQUÍ (div.lg:hidden.h-20) 
+          porque se renderizaba arriba bloqueando los clicks. 
+          El espacio inferior ya lo maneja cada página individualmente. */}
     </>
   );
 };
