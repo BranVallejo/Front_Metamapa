@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 
+// 1. IMPORTAMOS SONNER
+import { Toaster, toast } from "sonner";
+
 // Componentes visuales
-// Eliminamos FiltrosFecha porque no se usará
 import ColeccionGanadora from "../Components/Estadisticas/ColleccionGanadora";
 import CategoriaDestacada from "../Components/Estadisticas/CategoriaDestacada";
 import HorariosLine from "../Components/Estadisticas/HorariosLine";
@@ -55,6 +57,10 @@ const Estadisticas = () => {
       setProvinciaPorCategoria(dataProvCat);
     } catch (error) {
       console.error("❌ Error cargando estadísticas:", error);
+      // Notificación de error si falla la carga inicial
+      toast.error("Error de conexión", {
+        description: "No se pudieron cargar los datos del dashboard."
+      });
     } finally {
       setLoading(false);
     }
@@ -70,12 +76,16 @@ const Estadisticas = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("No estás autenticado para descargar este archivo.");
+        toast.error("Acceso denegado", {
+            description: "No estás autenticado para descargar este archivo."
+        });
         return;
       }
 
+      // Feedback visual de que empezó el proceso
+      const toastId = toast.loading("Generando archivo CSV...");
+
       // Definimos fechas "infinitas" para cumplir con el requisito del Backend de Java
-      // pero trayendo TODOS los datos reales.
       const fechaInicioHistoria = "2000-01-01"; 
       const fechaFinHistoria = "2100-12-31"; 
 
@@ -91,7 +101,7 @@ const Estadisticas = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: No se pudo generar el CSV`);
+        throw new Error(`Error ${response.status}`);
       }
 
       const blob = await response.blob();
@@ -105,14 +115,26 @@ const Estadisticas = () => {
       a.remove();
       window.URL.revokeObjectURL(downloadUrl);
 
+      // Actualizamos el toast a éxito
+      toast.success("Descarga iniciada", {
+        id: toastId,
+        description: "El archivo se ha guardado en tu equipo."
+      });
+
     } catch (error) {
       console.error("Error descargando CSV:", error);
-      alert("Error al descargar el archivo.");
+      toast.error("Error en la descarga", {
+        description: "Hubo un problema al generar el archivo. Intenta nuevamente."
+      });
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
+      
+      {/* 2. COMPONENTE TOASTER DE SONNER */}
+      <Toaster richColors position="top-right" />
+
       <FondoChill />
 
       <div className="relative z-10 p-6 md:p-10">

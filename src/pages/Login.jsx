@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// 👇 1. Importamos el fondo (ajustá la ruta si la guardaste en otro lado)
+// 👇 1. Importamos el fondo
 import FondoMapaConectado from "../Components/FondoDinamico/FondoMapaConectado.jsx";
+// 👇 2. Importamos Sonner
+import { Toaster, toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -43,7 +45,15 @@ const Login = () => {
 
         setGoogleLoading(false);
         setPopupWindow(null);
-        navigate("/", { replace: true });
+
+        // Notificación de éxito
+        toast.success("¡Login con Google exitoso!");
+
+        // Pequeño delay para que se vea el toast antes de irse
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 1500);
+
       } else if (event.data.type === "GOOGLE_LOGIN_ERROR") {
         console.error("❌ Error Google:", event.data.error);
 
@@ -51,7 +61,10 @@ const Login = () => {
           popupWindow.close();
         }
 
-        setError("Error Google: " + event.data.error);
+        const msgError = "Error Google: " + event.data.error;
+        setError(msgError);
+        toast.error(msgError); // Toast de error
+        
         setGoogleLoading(false);
         setPopupWindow(null);
       }
@@ -70,6 +83,8 @@ const Login = () => {
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     setError("");
+    const toastId = toast.loading("Abriendo Google...");
+
     console.log("🔵 Iniciando Google Login...");
 
     const baseUrl =
@@ -89,11 +104,15 @@ const Login = () => {
     );
 
     if (!popup) {
-      setError("¡Permite ventanas emergentes para Google Login!");
+      toast.dismiss(toastId);
+      const msg = "¡Permite ventanas emergentes para Google Login!";
+      setError(msg);
+      toast.warning(msg); // Toast de advertencia
       setGoogleLoading(false);
       return;
     }
 
+    toast.dismiss(toastId);
     setPopupWindow(popup);
 
     setTimeout(() => {
@@ -102,7 +121,9 @@ const Login = () => {
         if (popup && !popup.closed) {
           popup.close();
         }
-        setError("Tiempo agotado. Intenta nuevamente.");
+        const msg = "Tiempo agotado. Intenta nuevamente.";
+        setError(msg);
+        toast.error(msg);
         setGoogleLoading(false);
         setPopupWindow(null);
       }
@@ -113,6 +134,8 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    
+    const toastId = toast.loading("Iniciando sesión...");
 
     try {
       const response = await fetch(
@@ -131,13 +154,23 @@ const Login = () => {
         const data = await response.json();
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data));
-        navigate("/");
+        
+        toast.success("¡Bienvenido a MetaMapa!", { id: toastId });
+
+        setTimeout(() => {
+            navigate("/");
+        }, 1500);
+
       } else {
-        setError("Email o contraseña incorrectos");
+        const msg = "Email o contraseña incorrectos";
+        setError(msg);
+        toast.error(msg, { id: toastId });
       }
     } catch (error) {
       console.error("Error de login:", error);
-      setError("Error de conexión con el servidor");
+      const msg = "Error de conexión con el servidor";
+      setError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -152,16 +185,15 @@ const Login = () => {
   };
 
   return (
-    // 👇 2. Agregamos 'relative', 'overflow-hidden' y colores dark mode al contenedor padre
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 relative overflow-hidden transition-colors duration-300">
       
-      {/* 👇 3. Insertamos el Fondo Animado aquí (quedará detrás gracias a su posición fixed) */}
+      {/* 👇 3. TOASTER DE SONNER */}
+      <Toaster richColors position="top-right" />
+
       <FondoMapaConectado />
 
-      {/* 👇 4. Agregamos 'relative' y 'z-10' para que el contenido flote SOBRE el fondo */}
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-md">
-          {/* 👇 5. Agregamos estilos dark mode a la tarjeta para que sea legible */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
             
             {/* Header */}
@@ -175,7 +207,7 @@ const Login = () => {
               <p className="text-gray-600 dark:text-gray-400 mt-2">Accede a tu cuenta</p>
             </div>
 
-            {/* Error */}
+            {/* Error en caja (opcional, se mantiene por accesibilidad) */}
             {error && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                 <div className="flex items-center">
@@ -318,12 +350,16 @@ const Login = () => {
               </p>
             </div>
 
-            {/* Debug (opcional, podés quitarlo en prod) */}
+            {/* Debug con Toast */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => {
                   const token = localStorage.getItem("token");
-                  alert(token ? "✅ Hay token" : "❌ No hay token");
+                  if (token) {
+                    toast.success("✅ Hay token almacenado");
+                  } else {
+                    toast.error("❌ No hay token almacenado");
+                  }
                 }}
                 className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >

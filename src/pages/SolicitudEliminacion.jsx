@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+// 1. IMPORTAMOS SONNER
+import { Toaster, toast } from "sonner";
 
 const PaginaReporte = () => {
   const { idHecho } = useParams();
@@ -19,12 +21,7 @@ const PaginaReporte = () => {
     try {
       setCargando(true);
 
-      // Verificar que idHecho tenga un valor válido
-      console.log("📋 idHecho desde URL:", idHecho);
-      console.log("📋 Tipo de idHecho:", typeof idHecho);
-
-      // Si necesitas cargar datos específicos del hecho, aquí harías la petición
-      // Por ahora simulamos datos básicos
+      // Simulación de carga de datos (puedes descomentar tu fetch real aquí si lo tienes)
       const hechoSimulado = {
         id: idHecho,
         titulo: "Hecho sobre condiciones climáticas",
@@ -38,42 +35,40 @@ const PaginaReporte = () => {
       setHecho(hechoSimulado);
     } catch (error) {
       console.error("Error cargando hecho:", error);
+      toast.error("Error al cargar la información del hecho");
     } finally {
       setCargando(false);
     }
   };
 
   const enviarReporte = async () => {
+    // Validación con Toast Warning
     if (!descripcionReporte.trim()) {
-      alert("Por favor, describe el motivo de tu reporte.");
+      toast.warning("Falta información", {
+        description: "Por favor, describe el motivo de tu reporte antes de enviar."
+      });
       return;
     }
 
     setEnviando(true);
+    
+    // 1. Toast de Carga
+    const toastId = toast.loading("Enviando reporte...");
 
     try {
-      // Convertir idHecho a número y verificar que sea válido
       const idHechoNumerico = parseInt(idHecho);
-
-      console.log("🔍 idHecho original:", idHecho);
-      console.log("🔍 idHecho convertido a número:", idHechoNumerico);
-      console.log("🔍 ¿Es un número válido?", !isNaN(idHechoNumerico));
 
       if (isNaN(idHechoNumerico)) {
         throw new Error("ID del hecho no es un número válido");
       }
 
-      // Aquí enviarías el reporte a tu API
       const requestBody = {
-        idhecho: idHechoNumerico, // Usar el número convertido
+        idhecho: idHechoNumerico,
         justificacion: descripcionReporte.trim(),
       };
 
-      // ⭐⭐ IMPRIMIR EL BODY QUE SE ENVÍA ⭐⭐
       console.log("📤 Body que se envía:", requestBody);
-      console.log("📤 Body como JSON:", JSON.stringify(requestBody));
 
-      // Enviar el reporte
       const response = await fetch(
         "http://localhost:8500/gestordatos/publica/solicitudes",
         {
@@ -85,24 +80,35 @@ const PaginaReporte = () => {
         }
       );
 
-      // Imprimir detalles de la respuesta
-      console.log("📥 Status de respuesta:", response.status);
-      console.log("📥 OK:", response.ok);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.log("❌ Error response:", errorText);
         throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
       }
 
       const resultado = await response.json();
       console.log("✅ Reporte enviado:", resultado);
 
-      alert("¡Reporte enviado exitosamente! Gracias por tu colaboración.");
-      navigate("/"); // Volver al mapa después de enviar
+      // 2. Éxito: Actualizamos el toast
+      toast.success("¡Reporte enviado exitosamente!", {
+        id: toastId,
+        description: "Gracias por tu colaboración.",
+        duration: 3000,
+      });
+
+      // Navegar después de un momento
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+
     } catch (error) {
       console.error("❌ Error enviando reporte:", error);
-      alert(`Error al enviar el reporte: ${error.message}`);
+      
+      // 3. Error: Actualizamos el toast
+      toast.error("No se pudo enviar el reporte", {
+        id: toastId,
+        description: error.message || "Inténtalo de nuevo más tarde.",
+        duration: 5000,
+      });
     } finally {
       setEnviando(false);
     }
@@ -127,6 +133,10 @@ const PaginaReporte = () => {
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
+      
+      {/* 2. TOASTER DE SONNER */}
+      <Toaster richColors position="top-right" />
+
       <div className="max-w-2xl mx-auto p-6">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">

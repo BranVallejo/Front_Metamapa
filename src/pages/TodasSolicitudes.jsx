@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+// 1. IMPORTAMOS SONNER
+import { Toaster, toast } from "sonner";
 
 const ModuloSolicitudesAdmin = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -22,7 +24,10 @@ const ModuloSolicitudesAdmin = () => {
       setSolicitudes(data);
     } catch (error) {
       console.error("Error cargando solicitudes:", error);
-      alert("Error al cargar las solicitudes");
+      // Reemplazo de alert por toast
+      toast.error("Error al cargar las solicitudes", {
+        description: "Verifica la conexión con el servidor."
+      });
     } finally {
       setCargando(false);
     }
@@ -33,12 +38,14 @@ const ModuloSolicitudesAdmin = () => {
     cargarSolicitudes();
   }, []);
 
-  // Procesar solicitud (aceptar o rechazar) - CORREGIDO para usar ID de solicitud
+  // Procesar solicitud (aceptar o rechazar)
   const procesarSolicitud = async (solicitudId, accion) => {
+    // 1. Toast de carga
+    const toastId = toast.loading(`Procesando solicitud...`);
+    
     try {
       setProcesando(solicitudId);
 
-      // CORRECCIÓN: Usar el ID de la solicitud en lugar del ID del hecho
       const endpoint = `${API_BASE_URL}/solicitudes/${accion}?id=${solicitudId}`;
 
       console.log(`📤 Enviando solicitud a: ${endpoint}`);
@@ -65,14 +72,22 @@ const ModuloSolicitudesAdmin = () => {
       // Recargar la lista de solicitudes
       await cargarSolicitudes();
 
-      alert(
-        `Solicitud ${
-          accion === "aceptar" ? "aceptada" : "rechazada"
-        } correctamente`
-      );
+      // 2. Éxito: Actualizar Toast
+      const mensajeAccion = accion === "aceptar" ? "aceptada" : "rechazada";
+      toast.success(`Solicitud ${mensajeAccion} correctamente`, {
+        id: toastId, // Usamos el mismo ID para reemplazar el loading
+        duration: 3000
+      });
+
     } catch (error) {
       console.error(`❌ Error al ${accion} solicitud:`, error);
-      alert(`Error al ${accion} la solicitud: ${error.message}`);
+      
+      // 3. Error: Actualizar Toast
+      toast.error(`Error al ${accion} la solicitud`, {
+        id: toastId,
+        description: error.message,
+        duration: 5000
+      });
     } finally {
       setProcesando(null);
     }
@@ -93,6 +108,10 @@ const ModuloSolicitudesAdmin = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      
+      {/* 2. TOASTER DE SONNER */}
+      <Toaster richColors position="top-right" />
+
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -106,7 +125,10 @@ const ModuloSolicitudesAdmin = () => {
               </p>
             </div>
             <button
-              onClick={cargarSolicitudes}
+              onClick={() => {
+                  cargarSolicitudes();
+                  toast.info("Actualizando lista...");
+              }}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
             >
               <svg
@@ -159,7 +181,7 @@ const ModuloSolicitudesAdmin = () => {
             <div className="divide-y divide-gray-200">
               {solicitudes.map((solicitud) => (
                 <div
-                  key={solicitud.id} // Usar el ID de la solicitud como key
+                  key={solicitud.id}
                   className="p-6 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex justify-between items-start mb-4">
@@ -202,9 +224,7 @@ const ModuloSolicitudesAdmin = () => {
                   {/* Acciones */}
                   <div className="flex gap-3 pt-4 border-t border-gray-200">
                     <button
-                      onClick={
-                        () => procesarSolicitud(solicitud.id, "aceptar") // Usar solicitud.id en lugar de idHechoAsociado
-                      }
+                      onClick={() => procesarSolicitud(solicitud.id, "aceptar")}
                       disabled={procesando === solicitud.id}
                       className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
@@ -234,9 +254,7 @@ const ModuloSolicitudesAdmin = () => {
                     </button>
 
                     <button
-                      onClick={
-                        () => procesarSolicitud(solicitud.id, "rechazar") // Usar solicitud.id en lugar de idHechoAsociado
-                      }
+                      onClick={() => procesarSolicitud(solicitud.id, "rechazar")}
                       disabled={procesando === solicitud.id}
                       className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >

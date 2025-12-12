@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+// 1. IMPORTAMOS SONNER
+import { Toaster, toast } from "sonner";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ const Register = () => {
   const [error, setError] = useState("");
   const [popupWindow, setPopupWindow] = useState(null);
 
-  // Configurar listener para Google OAuth (igual que en Login)
+  // Configurar listener para Google OAuth
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("📩 Mensaje recibido en Register:", event.data);
@@ -40,24 +42,32 @@ const Register = () => {
           })
         );
 
-        // Cerrar popup si existe
         if (popupWindow && !popupWindow.closed) {
           popupWindow.close();
         }
 
-        // Redirigir
         setGoogleLoading(false);
         setPopupWindow(null);
-        navigate("/", { replace: true });
+
+        // Feedback visual
+        toast.success("¡Registro con Google exitoso!");
+
+        // Redirigir con pequeño delay para ver el mensaje
+        setTimeout(() => {
+            navigate("/", { replace: true });
+        }, 1500);
+
       } else if (event.data.type === "GOOGLE_LOGIN_ERROR") {
         console.error("❌ Error Google desde Register:", event.data.error);
 
-        // Cerrar popup si existe
         if (popupWindow && !popupWindow.closed) {
           popupWindow.close();
         }
 
-        setError("Error con Google: " + event.data.error);
+        const msg = "Error con Google: " + event.data.error;
+        setError(msg);
+        toast.error(msg); // Toast Error
+        
         setGoogleLoading(false);
         setPopupWindow(null);
       }
@@ -67,17 +77,18 @@ const Register = () => {
 
     return () => {
       window.removeEventListener("message", handleMessage);
-      // Cerrar popup al desmontar
       if (popupWindow && !popupWindow.closed) {
         popupWindow.close();
       }
     };
   }, [navigate, popupWindow]);
 
-  // Login con Google (igual que en Login)
+  // Login con Google
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
     setError("");
+    const toastId = toast.loading("Abriendo Google...");
+
     console.log("🔵 Iniciando Google Login desde Register...");
 
     const baseUrl =
@@ -85,13 +96,11 @@ const Register = () => {
       "http://localhost:8500/gestordatos";
     const googleAuthUrl = `${baseUrl}/contribuyentes/google`;
 
-    // Configurar popup
     const width = 500;
     const height = 600;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
 
-    // Abrir popup
     const popup = window.open(
       googleAuthUrl,
       "Google Login",
@@ -99,25 +108,30 @@ const Register = () => {
     );
 
     if (!popup) {
-      setError("¡Permite ventanas emergentes para Google Login!");
+      toast.dismiss(toastId);
+      const msg = "¡Permite ventanas emergentes para Google Login!";
+      setError(msg);
+      toast.warning(msg);
       setGoogleLoading(false);
       return;
     }
 
+    toast.dismiss(toastId);
     setPopupWindow(popup);
 
-    // Timeout por si se queda colgado
     setTimeout(() => {
       if (googleLoading) {
         console.log("⏰ Timeout - cerrando popup desde Register");
         if (popup && !popup.closed) {
           popup.close();
         }
-        setError("Tiempo agotado. Intenta nuevamente.");
+        const msg = "Tiempo agotado. Intenta nuevamente.";
+        setError(msg);
+        toast.error(msg);
         setGoogleLoading(false);
         setPopupWindow(null);
       }
-    }, 120000); // 2 minutos
+    }, 120000);
   };
 
   const handleChange = (e) => {
@@ -134,20 +148,26 @@ const Register = () => {
     setLoading(true);
     setError("");
 
-    // Validaciones...
+    // Validaciones
     if (formData.password !== formData.confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      const msg = "Las contraseñas no coinciden";
+      setError(msg);
+      toast.warning(msg); // Toast Warning
       setLoading(false);
       return;
     }
 
     if (!formData.aceptaTerminos) {
-      setError("Debes aceptar los términos y condiciones");
+      const msg = "Debes aceptar los términos y condiciones";
+      setError(msg);
+      toast.warning(msg); // Toast Warning
       setLoading(false);
       return;
     }
 
-    // Preparar datos para enviar...
+    // Toast de carga
+    const toastId = toast.loading("Creando tu cuenta...");
+
     const datosEnvio = {
       nombre: formData.nombre,
       apellido: formData.apellido,
@@ -174,30 +194,34 @@ const Register = () => {
         const data = await response.json();
         console.log("Registro exitoso:", data);
 
-        // Guardar token en localStorage
         if (data.token) {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", JSON.stringify(data));
         }
 
-        alert("¡Registro exitoso! Serás redirigido al mapa.");
-        navigate("/");
+        // Éxito
+        toast.success("¡Registro exitoso! Bienvenido.", { id: toastId });
+        
+        setTimeout(() => {
+            navigate("/");
+        }, 1500);
+
       } else {
         const errorData = await response.json();
-
-        // OPCIÓN 1: Quitar "Error inesperado: " si está al inicio
         let errorMessage = errorData.mensaje || "Error en el registro";
 
-        // Si empieza con "Error inesperado: ", quitarlo
         if (errorMessage.startsWith("Error inesperado: ")) {
           errorMessage = errorMessage.replace("Error inesperado: ", "");
         }
 
         setError(errorMessage);
+        toast.error(errorMessage, { id: toastId }); // Error del back
       }
     } catch (error) {
       console.error("Error de red:", error);
-      setError("Error de conexión. Intenta nuevamente.");
+      const msg = "Error de conexión. Intenta nuevamente.";
+      setError(msg);
+      toast.error(msg, { id: toastId }); // Error de red
     } finally {
       setLoading(false);
     }
@@ -205,6 +229,10 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      
+      {/* 2. COMPONENTE TOASTER */}
+      <Toaster richColors position="top-right" />
+
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           {/* Card del Registro */}
@@ -222,14 +250,14 @@ const Register = () => {
               </p>
             </div>
 
-            {/* Mensaje de error */}
+            {/* Mensaje de error en caja (opcional, se mantiene por accesibilidad) */}
             {error && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                 {error}
               </div>
             )}
 
-            {/* 🔐 BOTÓN GOOGLE (igual que en Login) */}
+            {/* 🔐 BOTÓN GOOGLE */}
             <div className="mb-6">
               <button
                 onClick={handleGoogleLogin}
@@ -343,6 +371,27 @@ const Register = () => {
                     disabled={loading || googleLoading}
                   />
                 </div>
+              </div>
+
+              {/* DNI */}
+              <div>
+                <label
+                  htmlFor="dni"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  DNI *
+                </label>
+                <input
+                  id="dni"
+                  name="dni"
+                  type="number"
+                  required
+                  value={formData.dni}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  placeholder="Tu número de documento"
+                  disabled={loading || googleLoading}
+                />
               </div>
 
               {/* Email */}

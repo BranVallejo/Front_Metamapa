@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import MapaSelectorCoordenadas from "../Components/MapaSelectorCoordenadas";
 
+// 1. IMPORTAMOS SONNER
+import { Toaster, toast } from "sonner";
+
 const categoriasPermitidas = [
   "vientos fuertes",
   "inundaciones",
@@ -18,7 +21,6 @@ const categoriasPermitidas = [
   "Otro",
 ];
 
-// Función auxiliar para determinar el tipo de archivo
 const getFileType = (url) => {
   const extension = url.split(".").pop().toLowerCase();
   const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
@@ -53,33 +55,28 @@ const EditarHecho = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Nuevos estados para el visor modal
+  // Visor Modal
   const [visorAbierto, setVisorAbierto] = useState(false);
   const [archivoActual, setArchivoActual] = useState(null);
   const [tipoArchivoActual, setTipoArchivoActual] = useState(null);
 
-  // Función para abrir el visor
   const abrirVisor = (archivo, tipo) => {
     setArchivoActual(archivo);
     setTipoArchivoActual(tipo);
     setVisorAbierto(true);
   };
 
-  // Función para cerrar el visor
   const cerrarVisor = () => {
     setVisorAbierto(false);
     setArchivoActual(null);
     setTipoArchivoActual(null);
   };
 
-  // Componente del visor modal
-  // Componente del visor modal - VERSIÓN CON Z-INDEX MÁS ALTO
   const VisorMultimedia = () => {
     if (!visorAbierto || !archivoActual) return null;
 
     return (
       <div className="fixed inset-0 bg-gray-900/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-        {/* Botón cerrar */}
         <button
           onClick={cerrarVisor}
           className="absolute top-4 cursor-pointer right-4 text-white text-2xl z-[10000] bg-gray-800/80 hover:bg-gray-700/80 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 border border-gray-600"
@@ -87,7 +84,6 @@ const EditarHecho = () => {
           ×
         </button>
 
-        {/* Contenido multimedia */}
         <div className="max-w-4xl max-h-full w-full relative z-[9998]">
           {tipoArchivoActual === "image" ? (
             <div className="flex items-center justify-center h-full">
@@ -168,7 +164,6 @@ const EditarHecho = () => {
             etiqueta: hecho.etiqueta || "",
           });
 
-          // Cargar archivos multimedia existentes
           if (
             hecho.archivosMultimedia &&
             Array.isArray(hecho.archivosMultimedia)
@@ -204,33 +199,37 @@ const EditarHecho = () => {
     }));
   };
 
-  // Manejar nuevos archivos
   const handleNuevosArchivos = (e) => {
     const archivosSeleccionados = Array.from(e.target.files);
     setNuevosArchivos((prev) => [...prev, ...archivosSeleccionados]);
+    // Feedback visual con Sonner
+    toast.info(`${archivosSeleccionados.length} archivo(s) agregado(s)`);
   };
 
-  // Eliminar archivo existente
   const eliminarArchivoExistente = (index) => {
     const archivoAEliminar = archivosExistentes[index];
     setArchivosAEliminar((prev) => [...prev, archivoAEliminar]);
     setArchivosExistentes((prev) => prev.filter((_, i) => i !== index));
+    toast.info("Archivo marcado para eliminar");
   };
 
-  // Eliminar nuevo archivo
   const eliminarNuevoArchivo = (index) => {
     setNuevosArchivos((prev) => prev.filter((_, i) => i !== index));
+    toast.info("Nuevo archivo eliminado");
   };
 
+  // --- HANDLESUBMIT MODIFICADO CON SONNER ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 1. Toast de Carga con Sonner
+    const toastId = toast.loading("Guardando cambios...");
 
     const cambios = {
       titulo: formData.titulo,
       descripcion: formData.descripcion,
       categoria: formData.categoria,
       ubicacion: {
-        // ← Enviar como objeto
         latitud: parseFloat(formData.latitud),
         longitud: parseFloat(formData.longitud),
       },
@@ -275,11 +274,26 @@ const EditarHecho = () => {
       }
 
       const data = await response.json();
-      alert(data.mensaje || "¡Hecho actualizado con éxito!");
-      navigate(`/hechos/${id}`);
+      
+      // 2. Éxito: Usamos el ID para convertir el loading en success
+      toast.success(data.mensaje || "¡Hecho actualizado con éxito!", {
+        id: toastId,
+        duration: 2000,
+      });
+
+      // Navegar
+      setTimeout(() => {
+        navigate(`/hechos/${id}`);
+      }, 2000);
+
     } catch (error) {
       console.error("Error al editar el hecho:", error);
-      alert(`Error: ${error.message}`);
+      
+      // 3. Error: Usamos el ID para convertir el loading en error
+      toast.error(`Error: ${error.message}`, {
+        id: toastId,
+        duration: 4000,
+      });
     }
   };
 
@@ -300,6 +314,10 @@ const EditarHecho = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
+      
+      {/* 2. AGREGAR EL TOASTER DE SONNER (Arriba a la derecha) */}
+      <Toaster richColors position="top-right" />
+
       <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-xl w-full max-w-4xl">
         {/* Visor Modal */}
         <VisorMultimedia />
@@ -475,7 +493,7 @@ const EditarHecho = () => {
             </div>
           </div>
 
-          {/* SECCIÓN DE MULTIMEDIA EXISTENTE - MODIFICADA PARA SER CLICKEABLE */}
+          {/* SECCIÓN DE MULTIMEDIA EXISTENTE */}
           {archivosExistentes.length > 0 && (
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">

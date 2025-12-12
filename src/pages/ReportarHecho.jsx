@@ -2,8 +2,16 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MapaSelectorCoordenadas from "../Components/MapaSelectorCoordenadas";
 
+// 1. IMPORTAMOS SONNER (La librería que instalaste)
+import { Toaster, toast } from "sonner";
+
 const ReportarHecho = () => {
   const navigate = useNavigate();
+
+  // --- CALCULAR FECHA MÁXIMA (AHORA) ---
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const maxDate = now.toISOString().slice(0, 16);
 
   const [formData, setFormData] = useState({
     titulo: "",
@@ -20,6 +28,13 @@ const ReportarHecho = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // 2. VALIDACIÓN
+    if (name === "fechaAcontecimiento" && value > maxDate) {
+        toast.error("No puedes seleccionar una fecha en el futuro");
+        return; 
+    }
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -37,13 +52,14 @@ const ReportarHecho = () => {
   const handleFileChange = (e) => {
     const nuevosArchivos = Array.from(e.target.files);
     setArchivos((prev) => [...prev, ...nuevosArchivos]);
+    toast.info(`${nuevosArchivos.length} archivo(s) agregado(s)`);
   };
 
   const eliminarArchivo = (index) => {
     setArchivos((prev) => prev.filter((_, i) => i !== index));
+    toast.info("Archivo eliminado");
   };
 
-  // Función para vaciar el formulario
   const resetForm = () => {
     setFormData({
       titulo: "",
@@ -57,13 +73,16 @@ const ReportarHecho = () => {
     setArchivos([]);
   };
 
+  // --- SUBMIT CON SONNER ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setEnviando(true);
 
+    // 1. Toast de Carga
+    const toastId = toast.loading("Enviando reporte, por favor espere...");
+
     const userData = JSON.parse(localStorage.getItem("user"));
 
-    // Construcción del DTO
     const dto = {
       titulo: formData.titulo,
       descripcion: formData.descripcion,
@@ -77,16 +96,9 @@ const ReportarHecho = () => {
       contribuyenteID: userData.userId,
     };
 
-    console.log("DTO que se enviará:", dto);
-
     try {
-      // Crear FormData para enviar archivos
       const formDataToSend = new FormData();
-
-      // Agregar el DTO como JSON en el campo "data"
       formDataToSend.append("data", JSON.stringify(dto));
-
-      // Agregar cada archivo al campo "file" (múltiples archivos con el mismo nombre)
       archivos.forEach((archivo) => {
         formDataToSend.append("file", archivo);
       });
@@ -95,29 +107,42 @@ const ReportarHecho = () => {
         `${import.meta.env.VITE_URL_INICIAL_DINAMICA}/hecho`,
         {
           method: "POST",
-          body: formDataToSend, // No establecer Content-Type, el navegador lo hará automáticamente con el boundary
+          body: formDataToSend,
         }
       );
 
-      // Verificar si la respuesta es exitosa
       if (response.ok) {
         const responseText = await response.text();
         console.log("Respuesta del servidor:", responseText);
 
-        alert("¡Hecho reportado con éxito!");
+        // 2. Éxito: Usamos el ID para actualizar el toast
+        toast.success("¡Hecho reportado con éxito!", {
+            id: toastId,
+            duration: 3000,
+        });
+        
         resetForm();
 
         setTimeout(() => {
           navigate("/");
-        }, 1000);
+        }, 1500);
       } else {
         const errorText = await response.text();
         console.error("Error del servidor:", errorText);
-        alert(`Error al reportar el hecho: ${errorText}`);
+        
+        // 3. Error Servidor
+        toast.error(`Error al reportar: ${errorText}`, {
+            id: toastId,
+            duration: 5000,
+        });
       }
     } catch (error) {
       console.error("Error de red:", error);
-      alert("Error de conexión. Verifica que el servidor esté funcionando.");
+      // 4. Error Red
+      toast.error("Error de conexión. Verifica el servidor.", {
+          id: toastId,
+          duration: 5000,
+      });
     } finally {
       setEnviando(false);
     }
@@ -125,6 +150,10 @@ const ReportarHecho = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      
+      {/* 3. COMPONENTE TOASTER DE SONNER (Arriba a la Derecha) */}
+      <Toaster richColors position="top-right" />
+
       <div className="bg-white p-6 md:p-8 rounded-lg shadow-xl w-full max-w-2xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -285,6 +314,7 @@ const ReportarHecho = () => {
                 value={formData.fechaAcontecimiento}
                 onChange={handleChange}
                 required
+                max={maxDate} 
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -307,13 +337,12 @@ const ReportarHecho = () => {
             </div>
           </div>
 
-          {/* Archivos Multimedia - NUEVA VERSIÓN */}
+          {/* Archivos Multimedia */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Archivos Multimedia (Opcional)
             </label>
 
-            {/* Input para seleccionar archivos */}
             <div className="mb-3">
               <label className="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-md shadow-sm cursor-pointer hover:bg-blue-50 inline-block">
                 Elegir archivos
@@ -330,7 +359,6 @@ const ReportarHecho = () => {
               </span>
             </div>
 
-            {/* Lista de archivos seleccionados */}
             {archivos.length > 0 && (
               <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">
