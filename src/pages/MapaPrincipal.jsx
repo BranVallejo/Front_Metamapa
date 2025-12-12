@@ -551,84 +551,44 @@ const MapaPrincipal = () => {
     const hechoId = hecho.id || hecho._id || hecho.codigo || "desconocido";
     window.location.href = `solicitarEliminacion/${hechoId}`;
   };
-
   return (
     <>
-      {/* CSS para arreglar el cursor y mover los controles en móvil */}
       <style jsx>{`
         .leaflet-container {
           cursor: default !important;
+          font-family: 'Inter', sans-serif;
         }
-
         .leaflet-container .leaflet-interactive {
           cursor: pointer !important;
         }
-
-        .marker-icon-custom {
-          cursor: pointer !important;
-        }
-
-        /* AJUSTE PARA MÓVIL: Mueve los botones +/- de Zoom hacia arriba para no chocar con el nav */
+        /* Ocultar atribución para diseño limpio (opcional, cuidado con licencias) */
+        .leaflet-control-attribution { opacity: 0.5; font-size: 10px; }
+        
+        /* Ajuste móvil */
         @media (max-width: 1024px) {
-          .leaflet-bottom {
-             bottom: 90px !important;
-          }
+          .leaflet-bottom { bottom: 90px !important; }
         }
       `}</style>
 
       <div className="h-screen w-full relative overflow-hidden dark:bg-gray-900">
-        
-        {/* --- BOTÓN FLOTANTE FILTROS (CORREGIDO) --- 
-            Uso: top-28 para móvil (bajar) y lg:top-4 para desktop (original) 
-        */}
-        <button
-          onClick={() => setPanelFiltrosAbierto(true)}
-          className="absolute top-28 lg:top-4 right-4 z-[1000] p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-          aria-label="Abrir filtros"
-        >
-          <FiltroIcono />
-        </button>
 
-        {/* El Overlay (fondo oscuro) para cerrar en móvil */}
-        {panelFiltrosAbierto && (
-          <div
-            onClick={() => setPanelFiltrosAbierto(false)}
-            className="absolute inset-0 bg-black/50 z-[1001] md:hidden"
-          ></div>
-        )}
-
-        {/* El Panel de Filtros */}
-        <FiltrosPanel
-          isOpen={panelFiltrosAbierto}
-          onClose={() => setPanelFiltrosAbierto(false)}
-          colecciones={colecciones}
-          filtros={filtrosPendientes}
-          coleccionPendiente={coleccionPendiente}
-          modoColeccionPendiente={modoColeccionPendiente}
-          coleccionAplicada={coleccionAplicada}
-          modoColeccionAplicada={modoColeccionAplicada}
-          onFiltroChange={handleFiltroChange}
-          onColeccionChange={cambiarColeccionPendiente}
-          onModoChange={cambiarModoColeccionPendiente}
-          onLimpiar={limpiarFiltros}
-          onAplicar={aplicarFiltros}
-        />
-
-        {/* El Mapa */}
+        {/* --- MAPA --- */}
         <MapContainer
           center={[-38.4161, -63.6167]}
           zoom={4}
-          zoomControl={false} // <--- Desactivar el default (que está arriba a la izquierda)
+          zoomControl={false}
           style={{ height: "100%", width: "100%", zIndex: 0 }}
           minZoom={4}
           maxZoom={15.5}
-          maxBounds={[
-            [-55.0, -73.0],
-            [-21.0, -53.0],
-          ]}
+          maxBounds={[[-55.0, -73.0], [-21.0, -53.0]]}
         >
           <ZoomControl position="bottomright" />
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            // Usamos CartoDB Voyager para un look más "Apple Maps / Clean"
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          />
+
           <MapEvents
             onBoundsChange={setBounds}
             onZoomChange={setZoom}
@@ -637,73 +597,33 @@ const MapaPrincipal = () => {
             setMarcadores={setMarcadores}
           />
 
-          {/* Popups con multimedia mejorada */}
+          {/* Renderizado de Marcadores (Igual que antes) */}
           {marcadores.map((hecho, index) => (
             <Marker
               key={index}
               position={[parseFloat(hecho.latitud), parseFloat(hecho.longitud)]}
-              icon={obtenerIconoParaHecho(hecho)} // ← Ícono basado en categoría
+              icon={obtenerIconoParaHecho(hecho)}
             >
-              <Popup>
+              <Popup className="custom-popup">
+                {/* ... (Tu contenido del popup se mantiene igual) ... */}
                 <div className="min-w-64 max-w-sm">
-                  {/* Título centrado y más grande */}
-                  <h4 className="font-bold text-lg text-gray-800 text-center mb-2">
-                    {hecho.titulo || "Sin título"}
-                  </h4>
+                  <h4 className="font-bold text-lg text-gray-800 mb-1">{hecho.titulo || "Sin título"}</h4>
+                  <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-500 font-medium mb-2 uppercase">{hecho.categoria}</span>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">{hecho.descripcion}</p>
 
-                  {/* Descripción */}
-                  <p className="text-sm text-gray-600 mb-3">
-                    <strong>Descripción:</strong>{" "}
-                    {hecho.descripcion || "Sin descripción"}
-                  </p>
-
-                  {hecho.categoria && (
-                    <p className="text-sm text-gray-600 mb-3">
-                      <strong>Categoría:</strong> {hecho.categoria}
-                    </p>
+                  {hecho.archivosMultimedia && hecho.archivosMultimedia.length > 0 && (
+                    <button
+                      onClick={() => abrirVisor(hecho.archivosMultimedia, 0)}
+                      className="w-full mb-2 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-black transition-colors"
+                    >
+                      Ver Multimedia ({hecho.archivosMultimedia.length})
+                    </button>
                   )}
-
-                  <p className="text-sm text-gray-600 mb-3">
-                    <strong>Fecha:</strong>{" "}
-                    {hecho.fechaAcontecimiento
-                      ? new Date(hecho.fechaAcontecimiento).toLocaleDateString()
-                      : "No especificada"}
-                  </p>
-
-                  {/* Sección de Multimedia Simplificada */}
-                  {hecho.archivosMultimedia &&
-                    hecho.archivosMultimedia.length > 0 && (
-                      <div className="mb-3">
-                        <button
-                          onClick={() =>
-                            abrirVisor(hecho.archivosMultimedia, 0)
-                          }
-                          className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                          Ver Multimedia ({hecho.archivosMultimedia.length})
-                        </button>
-                      </div>
-                    )}
-
-                  {/* Botón de reportar más pegado */}
                   <button
                     onClick={() => reportarHecho(hecho)}
-                    className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium"
+                    className="w-full py-1.5 text-red-500 text-xs font-semibold hover:bg-red-50 rounded transition-colors"
                   >
-                    Reportar este hecho
+                    Reportar problema
                   </button>
                 </div>
               </Popup>
@@ -711,15 +631,76 @@ const MapaPrincipal = () => {
           ))}
         </MapContainer>
 
-        {/* Visor de Multimedia */}
+        {/* --- CAPA SUPERIOR (UI FLOTANTE) --- */}
+
+        {/* --- CAPA SUPERIOR (UI FLOTANTE) --- */}
+
+        {/* Botón flotante Responsive:
+            - Mobile: Solo ícono (círculo), pegado a la izquierda (left-4)
+            - Desktop: Píldora con texto (md:pl-4...)
+        */}
+        <div className="absolute top-24 left-4 z-[1000] md:top-4">
+          <button
+            onClick={() => setPanelFiltrosAbierto(true)}
+            className="
+              group flex items-center justify-center
+              p-2 md:pl-4 md:pr-6 md:py-3.5 
+              bg-white/90 dark:bg-gray-900/90 backdrop-blur-md 
+              rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] 
+              border border-white/40 dark:border-gray-700/30 
+              transition-all duration-300 hover:scale-[1.03]
+              gap-0 md:gap-3
+            "
+          >
+            {/* Icono (Siempre visible) */}
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors relative">
+              <FiltroIcono />
+              {/* Indicador (Punto rojo) */}
+              {(filtrosAplicados.categoria || filtrosAplicados.titulo || filtrosAplicados.desdeAcontecimiento || coleccionAplicada) && (
+                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"></span>
+              )}
+            </div>
+
+            {/* Textos (OCULTOS en mobile con 'hidden', visibles en 'md:flex') */}
+            <div className="hidden md:flex flex-col text-left">
+              <span className="font-bold text-gray-900 dark:text-white text-sm leading-tight">
+                Filtros
+              </span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 leading-tight group-hover:text-gray-700 dark:group-hover:text-gray-300">
+                {coleccionAplicada ? "Colección activa" : "Personalizar mapa"}
+              </span>
+            </div>
+          </button>
+        </div>
+
+        {/* Panel Filtros (Componente Nuevo) */}
+        <FiltrosPanel
+          isOpen={panelFiltrosAbierto}
+          onClose={() => setPanelFiltrosAbierto(false)}
+          colecciones={colecciones}
+          filtros={filtrosPendientes}
+          coleccionPendiente={coleccionPendiente}
+          modoColeccionPendiente={modoColeccionPendiente}
+          coleccionAplicada={coleccionAplicada}
+          onFiltroChange={handleFiltroChange}
+          onColeccionChange={cambiarColeccionPendiente}
+          onModoChange={cambiarModoColeccionPendiente}
+          onLimpiar={limpiarFiltros}
+          onAplicar={aplicarFiltros}
+        />
+
+        {/* Visor Multimedia */}
         <VisorMultimedia />
 
-        {/* --- BARRA FLOTANTE INFO (CORREGIDO) --- 
-            Uso: bottom-24 para móvil (subir) y lg:bottom-2 para desktop (original) 
-        */}
-        <div className="absolute bottom-24 lg:bottom-2 left-1/2 -translate-x-1/2 z-[1000] p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md text-xs text-gray-700 dark:text-gray-200">
-          {infoMapa} | Zoom: {zoom.toFixed(1)}
+        {/* Barra Info Flotante (Pill inferior) */}
+        <div className="absolute bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[999]">
+          <div className="px-4 py-2 bg-gray-900/80 backdrop-blur-md rounded-full text-white text-xs font-medium shadow-lg flex items-center gap-3">
+            <span>{infoMapa}</span>
+            <span className="w-px h-3 bg-gray-600"></span>
+            <span className="opacity-80">Zoom: {zoom.toFixed(1)}</span>
+          </div>
         </div>
+
       </div>
     </>
   );
