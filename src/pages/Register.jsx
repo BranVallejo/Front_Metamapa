@@ -95,7 +95,7 @@ const Register = () => {
 
     const baseUrl =
       import.meta.env.VITE_URL_INICIAL_GESTOR ||
-      "http://localhost:8500/gestordatos";
+      "http://localhost:8080/gestordatos";
     const googleAuthUrl = `${baseUrl}/contribuyentes/google`;
 
     const width = 500;

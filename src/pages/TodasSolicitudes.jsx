@@ -8,7 +8,7 @@ const ModuloSolicitudesAdmin = () => {
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(null);
 
-  const API_BASE_URL = "http://localhost:8500/gestordatos/publica";
+  const API_BASE_URL = "http://localhost:8080/gestordatos/publica";
 
   // Cargar solicitudes pendientes
   const cargarSolicitudes = async () => {
@@ -26,7 +26,7 @@ const ModuloSolicitudesAdmin = () => {
     } catch (error) {
       console.error("Error cargando solicitudes:", error);
       toast.error("Error al cargar las solicitudes", {
-        description: "Verifica la conexión con el servidor."
+        description: "Verifica la conexión con el servidor.",
       });
     } finally {
       setCargando(false);
@@ -41,7 +41,7 @@ const ModuloSolicitudesAdmin = () => {
   // Procesar solicitud (aceptar o rechazar)
   const procesarSolicitud = async (solicitudId, accion) => {
     const toastId = toast.loading(`Procesando solicitud...`);
-    
+
     try {
       setProcesando(solicitudId);
 
@@ -74,15 +74,14 @@ const ModuloSolicitudesAdmin = () => {
       const mensajeAccion = accion === "aceptar" ? "aceptada" : "rechazada";
       toast.success(`Solicitud ${mensajeAccion} correctamente`, {
         id: toastId,
-        duration: 3000
+        duration: 3000,
       });
-
     } catch (error) {
       console.error(`❌ Error al ${accion} solicitud:`, error);
       toast.error(`Error al ${accion} la solicitud`, {
         id: toastId,
         description: error.message,
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setProcesando(null);
@@ -92,16 +91,14 @@ const ModuloSolicitudesAdmin = () => {
   return (
     // Contenedor principal con posición relativa para el fondo
     <div className="min-h-screen relative overflow-hidden transition-colors duration-300 font-sans text-gray-800 dark:text-gray-100">
-      
       {/* 2. Fondo Chill Animado */}
       <FondoChill />
-      
+
       {/* Toaster */}
       <Toaster richColors position="top-right" />
 
       {/* Contenido (z-10 para estar sobre el fondo) */}
       <div className="relative z-10 pt-28 pb-20 px-4 md:px-8 max-w-6xl mx-auto">
-        
         {/* Header con efecto Glass */}
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 mb-8 border border-white/40 dark:border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -114,8 +111,8 @@ const ModuloSolicitudesAdmin = () => {
           </div>
           <button
             onClick={() => {
-                cargarSolicitudes();
-                toast.info("Actualizando lista...");
+              cargarSolicitudes();
+              toast.info("Actualizando lista...");
             }}
             className="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 flex items-center gap-2"
           >
@@ -140,14 +137,18 @@ const ModuloSolicitudesAdmin = () => {
         {cargando ? (
           <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-3xl shadow-lg p-12 text-center border border-white/20 dark:border-white/5">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">Cargando solicitudes...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">
+              Cargando solicitudes...
+            </p>
           </div>
         ) : (
           <>
             {/* Estadísticas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500 border-t border-r border-b border-white/40 dark:border-white/10">
-                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Por Revisar</h3>
+                <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                  Por Revisar
+                </h3>
                 <p className="text-4xl font-black text-gray-800 dark:text-white">
                   {solicitudes.length}
                 </p>
@@ -164,7 +165,9 @@ const ModuloSolicitudesAdmin = () => {
 
               {solicitudes.length === 0 ? (
                 <div className="p-16 text-center">
-                  <div className="text-gray-300 dark:text-gray-600 text-6xl mb-4 grayscale opacity-50">📝</div>
+                  <div className="text-gray-300 dark:text-gray-600 text-6xl mb-4 grayscale opacity-50">
+                    📝
+                  </div>
                   <h3 className="text-xl font-bold text-gray-600 dark:text-gray-300 mb-2">
                     No hay solicitudes pendientes
                   </h3>
@@ -219,7 +222,9 @@ const ModuloSolicitudesAdmin = () => {
                       {/* Acciones */}
                       <div className="flex gap-4 pt-4 border-t border-gray-100 dark:border-white/5">
                         <button
-                          onClick={() => procesarSolicitud(solicitud.id, "aceptar")}
+                          onClick={() =>
+                            procesarSolicitud(solicitud.id, "aceptar")
+                          }
                           disabled={procesando === solicitud.id}
                           className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold hover:-translate-y-0.5"
                         >
@@ -249,7 +254,9 @@ const ModuloSolicitudesAdmin = () => {
                         </button>
 
                         <button
-                          onClick={() => procesarSolicitud(solicitud.id, "rechazar")}
+                          onClick={() =>
+                            procesarSolicitud(solicitud.id, "rechazar")
+                          }
                           disabled={procesando === solicitud.id}
                           className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold hover:-translate-y-0.5"
                         >
