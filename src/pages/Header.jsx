@@ -66,6 +66,12 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
   ),
+  // 👇 NUEVO ICONO PARA FUENTES
+  Database: ({ className }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+    </svg>
+  ),
 };
 
 // --- SUB-COMPONENTES ---
@@ -168,6 +174,8 @@ const ProfessionalHeader = () => {
     { path: "/", label: "Mapa", Icon: Icons.Map, show: true },
     { path: "/misHechos", label: "Mis Hechos", Icon: Icons.MapPin, show: isLoggedIn },
     { path: "/colecciones", label: "Colecciones", Icon: Icons.Folder, show: esAdmin() },
+    // 👇 NUEVO LINK FUENTES (Solo Admin)
+    { path: "/fuentes", label: "Fuentes", Icon: Icons.Database, show: esAdmin() }, 
     { path: "/solicitudes-eliminacion", label: "Solicitudes", Icon: Icons.Inbox, show: esAdmin() },
     { path: "/estadisticas", label: "Estadísticas", Icon: Icons.Chart, show: esAdmin() },
   ];
@@ -223,13 +231,13 @@ const ProfessionalHeader = () => {
                   to="/login"
                   className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-blue-600 transition-colors whitespace-nowrap"
                 >
-                  Entrar
+                  Iniciar Sesión
                 </Link>
                 <Link
                   to="/register"
                   className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs sm:text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all whitespace-nowrap"
                 >
-                  Unirse
+                  Registarse
                 </Link>
               </div>
             ) : (
@@ -296,10 +304,6 @@ const ProfessionalHeader = () => {
       {/* --- SPACERS --- */}
       {/* Spacer SUPERIOR para el header fijo */}
       <div className="h-24 md:h-28" />
-      
-      {/* 🛑 ELIMINAMOS EL SPACER INFERIOR DE AQUÍ (div.lg:hidden.h-20) 
-          porque se renderizaba arriba bloqueando los clicks. 
-          El espacio inferior ya lo maneja cada página individualmente. */}
     </>
   );
 };

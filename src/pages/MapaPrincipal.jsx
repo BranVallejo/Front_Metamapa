@@ -584,9 +584,8 @@ const MapaPrincipal = () => {
         >
           <ZoomControl position="bottomright" />
           <TileLayer
-            // Usamos CartoDB Voyager para un look más "Apple Maps / Clean"
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
 
           <MapEvents
@@ -639,7 +638,7 @@ const MapaPrincipal = () => {
             - Mobile: Solo ícono (círculo), pegado a la izquierda (left-4)
             - Desktop: Píldora con texto (md:pl-4...)
         */}
-        <div className="absolute top-24 left-4 z-[1000] md:top-4">
+        <div className="absolute top-32 left-4 z-[1000] md:top-24">
           <button
             onClick={() => setPanelFiltrosAbierto(true)}
             className="
@@ -652,16 +651,14 @@ const MapaPrincipal = () => {
               gap-0 md:gap-3
             "
           >
-            {/* Icono (Siempre visible) */}
+            {/* ... (el contenido del botón sigue igual) ... */}
             <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors relative">
               <FiltroIcono />
-              {/* Indicador (Punto rojo) */}
               {(filtrosAplicados.categoria || filtrosAplicados.titulo || filtrosAplicados.desdeAcontecimiento || coleccionAplicada) && (
                 <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"></span>
               )}
             </div>
 
-            {/* Textos (OCULTOS en mobile con 'hidden', visibles en 'md:flex') */}
             <div className="hidden md:flex flex-col text-left">
               <span className="font-bold text-gray-900 dark:text-white text-sm leading-tight">
                 Filtros
