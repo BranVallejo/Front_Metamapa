@@ -56,9 +56,8 @@ const Register = () => {
 
         // Redirigir con pequeño delay para ver el mensaje
         setTimeout(() => {
-            navigate("/", { replace: true });
+          navigate("/", { replace: true });
         }, 1500);
-
       } else if (event.data.type === "GOOGLE_LOGIN_ERROR") {
         console.error("❌ Error Google desde Register:", event.data.error);
 
@@ -69,7 +68,7 @@ const Register = () => {
         const msg = "Error con Google: " + event.data.error;
         setError(msg);
         toast.error(msg); // Toast Error
-        
+
         setGoogleLoading(false);
         setPopupWindow(null);
       }
@@ -93,9 +92,7 @@ const Register = () => {
 
     console.log("🔵 Iniciando Google Login desde Register...");
 
-    const baseUrl =
-      import.meta.env.VITE_URL_INICIAL_GESTOR ||
-      "http://localhost:8080/gestordatos";
+    const baseUrl = import.meta.env.VITE_URL_GOOGLE_AUTH;
     const googleAuthUrl = `${baseUrl}/contribuyentes/google`;
 
     const width = 500;
@@ -203,11 +200,10 @@ const Register = () => {
 
         // Éxito
         toast.success("¡Registro exitoso! Bienvenido.", { id: toastId });
-        
-        setTimeout(() => {
-            navigate("/");
-        }, 1500);
 
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
       } else {
         const errorData = await response.json();
         let errorMessage = errorData.mensaje || "Error en el registro";
@@ -232,7 +228,6 @@ const Register = () => {
   return (
     // Contenedor principal con relative y overflow-hidden para el fondo
     <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
-      
       {/* 2. COMPONENTE TOASTER */}
       <Toaster richColors position="top-right" />
 
@@ -241,16 +236,16 @@ const Register = () => {
 
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-md">
-          
           {/* ✨ GLASS FACHERO (Card del Registro) ✨ */}
-          <div className="
+          <div
+            className="
             backdrop-blur-xl 
             bg-white/30 dark:bg-black/50 
             rounded-2xl shadow-2xl p-8 
             border border-white/40 dark:border-gray-700/50
             transition-all duration-300
-          ">
-            
+          "
+          >
             {/* Logo y Título */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-300 mb-2 drop-shadow-sm">
@@ -567,7 +562,10 @@ const Register = () => {
             <p className="text-sm text-gray-600 dark:text-gray-300 font-medium px-4 py-2 rounded-lg bg-white/30 dark:bg-black/30 backdrop-blur-md inline-block">
               * Campos obligatorios. Los datos personales se manejan según
               nuestra{" "}
-              <a href="#" className="text-blue-700 dark:text-blue-300 hover:text-blue-500 font-bold underline">
+              <a
+                href="#"
+                className="text-blue-700 dark:text-blue-300 hover:text-blue-500 font-bold underline"
+              >
                 Política de Privacidad
               </a>
             </p>

@@ -53,7 +53,6 @@ const Login = () => {
         setTimeout(() => {
           navigate("/", { replace: true });
         }, 1500);
-
       } else if (event.data.type === "GOOGLE_LOGIN_ERROR") {
         console.error("❌ Error Google:", event.data.error);
 
@@ -64,7 +63,7 @@ const Login = () => {
         const msgError = "Error Google: " + event.data.error;
         setError(msgError);
         toast.error(msgError); // Toast de error
-        
+
         setGoogleLoading(false);
         setPopupWindow(null);
       }
@@ -87,9 +86,7 @@ const Login = () => {
 
     console.log("🔵 Iniciando Google Login...");
 
-    const baseUrl =
-      import.meta.env.VITE_URL_INICIAL_GESTOR ||
-      "http://localhost:8080/gestordatos";
+    const baseUrl = import.meta.env.VITE_URL_GOOGLE_AUTH;
     const googleAuthUrl = `${baseUrl}/contribuyentes/google`;
 
     const width = 500;
@@ -134,7 +131,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     const toastId = toast.loading("Iniciando sesión...");
 
     try {
@@ -154,13 +151,12 @@ const Login = () => {
         const data = await response.json();
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data));
-        
+
         toast.success("¡Bienvenido a MetaMapa!", { id: toastId });
 
         setTimeout(() => {
-            navigate("/");
+          navigate("/");
         }, 1500);
-
       } else {
         const msg = "Email o contraseña incorrectos";
         setError(msg);
@@ -187,7 +183,6 @@ const Login = () => {
   return (
     // Quitamos bg-gray-50/900 sólido para asegurar que el fondo del mapa predomine si hay gaps
     <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
-      
       {/* 👇 3. TOASTER DE SONNER */}
       <Toaster richColors position="top-right" />
 
@@ -195,16 +190,16 @@ const Login = () => {
 
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-md">
-          
           {/* ✨ AQUÍ ESTÁ EL EFECTO GLASS FACHERO ✨ */}
-          <div className="
+          <div
+            className="
             backdrop-blur-xl 
             bg-white/30 dark:bg-black/50 
             rounded-2xl shadow-2xl p-8 
             border border-white/40 dark:border-gray-700/50
             transition-all duration-300
-          ">
-            
+          "
+          >
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-300 mb-2 drop-shadow-sm">
@@ -213,7 +208,9 @@ const Login = () => {
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
                 Iniciar Sesión
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 mt-2 font-medium">Accede a tu cuenta</p>
+              <p className="text-gray-700 dark:text-gray-300 mt-2 font-medium">
+                Accede a tu cuenta
+              </p>
             </div>
 
             {/* Error en caja */}
@@ -340,7 +337,9 @@ const Login = () => {
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 bg-white/60"
                   disabled={loading || googleLoading}
                 />
-                <label className="ml-2 text-sm text-gray-800 dark:text-gray-200 font-medium">Recordarme</label>
+                <label className="ml-2 text-sm text-gray-800 dark:text-gray-200 font-medium">
+                  Recordarme
+                </label>
               </div>
 
               <button
@@ -356,7 +355,10 @@ const Login = () => {
             <div className="mt-6 pt-4 border-t border-gray-300/50 dark:border-gray-600/50 text-center">
               <p className="text-gray-800 dark:text-gray-300">
                 ¿No tienes cuenta?{" "}
-                <Link to="/register" className="text-blue-700 dark:text-blue-300 font-bold hover:underline">
+                <Link
+                  to="/register"
+                  className="text-blue-700 dark:text-blue-300 font-bold hover:underline"
+                >
                   Regístrate
                 </Link>
               </p>
