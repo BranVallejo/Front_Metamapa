@@ -8,18 +8,22 @@ const PanelInformacion = ({ hecho }) => {
         Metadatos
       </h3>
       <dl className="space-y-3 text-xs">
+        
+        {/* CORRECCIÓN: Ahora mostramos fechaCarga, que es la fecha real de registro en el sistema */}
         <div className="flex justify-between border-b border-gray-200/20 dark:border-white/5 pb-1">
           <dt className="text-gray-500 dark:text-gray-400">Fecha Reg.</dt>
           <dd className="font-mono text-gray-700 dark:text-gray-300 text-right">
-            {formatearFecha(hecho.fechaAcontecimiento)}
+            {hecho.fechaCarga ? formatearFecha(hecho.fechaCarga) : "N/A"}
           </dd>
         </div>
+
         <div className="flex justify-between border-b border-gray-200/20 dark:border-white/5 pb-1">
           <dt className="text-gray-500 dark:text-gray-400">Autor</dt>
           <dd className="font-medium text-gray-700 dark:text-gray-300 text-right">
             {hecho.nombre_contribuyente} {hecho.apellido_contribuyente?.charAt(0)}.
           </dd>
         </div>
+
         <div className="flex justify-between pt-1">
           <dt className="text-gray-500 dark:text-gray-400">ID Sistema</dt>
           <dd className="font-mono text-gray-500 dark:text-gray-500">
