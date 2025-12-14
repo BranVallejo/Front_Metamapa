@@ -24,14 +24,13 @@ import ModuloSolicitudesAdmin from "./pages/Solicitudes/ModuloSolicitudesAdmin";
 
 function AppContent() {
   const location = useLocation();
-  
-  // Detectamos si estamos en la Home (el mapa) para ajustar el layout
   const isMap = location.pathname === "/";
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
-      <header className="absolute top-0 w-full z-50">
+      {/* 👇 AQUÍ ESTÁ EL CAMBIO: z-50 -> z-[5000] */}
+      <header className="absolute top-0 w-full z-[5000]">
         <Header />
       </header>
 

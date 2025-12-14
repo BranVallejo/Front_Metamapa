@@ -50,16 +50,12 @@ const ICONOS_POR_CATEGORIA = {
     "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764552388/library/ctfnm4pdbvfiov8h7baf.png",
 };
 
-// --- Ícono por defecto (cuando no hay match) ---
 const ICONO_DEFAULT =
   "https://res.cloudinary.com/dikwt4s3v/image/upload/v1764597823/library/iwq8tmolua2ux5szrezt.png";
 
-// --- Función SIMPLE para obtener el ícono según categoría ---
 const obtenerIconoParaHecho = (hecho) => {
   const categoria = hecho?.categoria?.toLowerCase().trim();
-
-  // Determinar qué URL usar
-  let iconUrl = ICONO_DEFAULT; // Por defecto si no hay match
+  let iconUrl = ICONO_DEFAULT;
 
   if (categoria && ICONOS_POR_CATEGORIA[categoria]) {
     iconUrl = ICONOS_POR_CATEGORIA[categoria];
@@ -68,8 +64,8 @@ const obtenerIconoParaHecho = (hecho) => {
   return new L.Icon({
     iconUrl: iconUrl,
     iconSize: [50, 50],
-    iconAnchor: [21, 45],
-    popupAnchor: [0, -38],
+    iconAnchor: [25, 50],
+    popupAnchor: [0, -50],
     shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
     shadowSize: [41, 41],
     shadowAnchor: [13, 41],
@@ -77,32 +73,13 @@ const obtenerIconoParaHecho = (hecho) => {
   });
 };
 
-// --- Ícono SVG para el botón flotante de filtros ---
 const FiltroIcono = () => (
-  <svg
-    className="w-5 h-5"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-    />
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
   </svg>
 );
 
-// --- Componente para manejar eventos del mapa ---
-function MapEvents({
-  onBoundsChange,
-  onZoomChange,
-  zoomMinimoParaHechos,
-  setInfoMapa,
-  setMarcadores,
-}) {
+function MapEvents({ onBoundsChange, onZoomChange, zoomMinimoParaHechos, setInfoMapa, setMarcadores }) {
   const map = useMapEvents({
     moveend: () => {
       onBoundsChange(map.getBounds());
@@ -113,608 +90,352 @@ function MapEvents({
       onZoomChange(newZoom);
       if (newZoom < zoomMinimoParaHechos) {
         setMarcadores([]);
-        setInfoMapa(
-          `Zoom bajo (${newZoom.toFixed(
-            1
-          )}). Acerca a ${zoomMinimoParaHechos}+ para ver hechos.`
-        );
+        setInfoMapa(`Zoom bajo (${newZoom.toFixed(1)}). Acerca a ${zoomMinimoParaHechos}+`);
       }
     },
   });
   return null;
 }
 
-// --- Función auxiliar para determinar el tipo de archivo ---
 const getFileType = (url) => {
   const extension = url.split(".").pop().toLowerCase();
   const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
   const videoExtensions = ["mp4", "avi", "mov", "wmv", "flv", "webm", "mkv"];
-
-  if (imageExtensions.includes(extension)) {
-    return "image";
-  } else if (videoExtensions.includes(extension)) {
-    return "video";
-  } else {
-    return "unknown";
-  }
+  return imageExtensions.includes(extension) ? "image" : videoExtensions.includes(extension) ? "video" : "unknown";
 };
 
 const MapaPrincipal = () => {
-  // --- ESTADOS ---
   const [panelFiltrosAbierto, setPanelFiltrosAbierto] = useState(false);
   const [marcadores, setMarcadores] = useState([]);
   const [colecciones, setColecciones] = useState([]);
   const [coleccionPendiente, setColeccionPendiente] = useState(null);
   const [coleccionAplicada, setColeccionAplicada] = useState(null);
-  const [modoColeccionPendiente, setModoColeccionPendiente] =
-    useState("curada");
+  const [modoColeccionPendiente, setModoColeccionPendiente] = useState("curada");
   const [modoColeccionAplicada, setModoColeccionAplicada] = useState("curada");
   const [infoMapa, setInfoMapa] = useState("Mové el mapa para cargar hechos.");
   const [bounds, setBounds] = useState(null);
   const [zoom, setZoom] = useState(4);
+  
   const [filtrosPendientes, setFiltrosPendientes] = useState({
-    titulo: "",
-    descripcion: "",
-    categoria: "",
-    tipoFuente: "",
-    contieneMultimedia: "",
-    desdeAcontecimiento: "",
-    hastaAcontecimiento: "",
-    desdeCarga: "",
-    hastaCarga: "",
-    estadoDeseado: "VISIBLE",
+    titulo: "", descripcion: "", categoria: "", tipoFuente: "",
+    contieneMultimedia: "", desdeAcontecimiento: "", hastaAcontecimiento: "",
+    desdeCarga: "", hastaCarga: "", estadoDeseado: "VISIBLE",
   });
-  const [filtrosAplicados, setFiltrosAplicados] = useState({
-    ...filtrosPendientes,
-  });
+  const [filtrosAplicados, setFiltrosAplicados] = useState({ ...filtrosPendientes });
 
-  // --- ESTADOS NUEVOS PARA EL VISOR DE IMÁGENES ---
   const [visorAbierto, setVisorAbierto] = useState(false);
   const [imagenActual, setImagenActual] = useState(0);
-  const [archivosMultimediaActuales, setArchivosMultimediaActuales] = useState(
-    []
-  );
+  const [archivosMultimediaActuales, setArchivosMultimediaActuales] = useState([]);
 
-  // --- CONFIGURACIÓN ---
   const zoomMinimoParaHechos = 13;
   const API_BASE_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica`;
 
-  // --- FUNCIONES PARA EL VISOR ---
   const abrirVisor = (archivos, indiceInicial = 0) => {
     setArchivosMultimediaActuales(archivos);
     setImagenActual(indiceInicial);
     setVisorAbierto(true);
   };
-
   const cerrarVisor = () => {
     setVisorAbierto(false);
     setArchivosMultimediaActuales([]);
     setImagenActual(0);
   };
-
   const imagenAnterior = () => {
-    setImagenActual((prev) =>
-      prev === 0 ? archivosMultimediaActuales.length - 1 : prev - 1
-    );
+    setImagenActual((prev) => (prev === 0 ? archivosMultimediaActuales.length - 1 : prev - 1));
   };
-
   const imagenSiguiente = () => {
-    setImagenActual((prev) =>
-      prev === archivosMultimediaActuales.length - 1 ? 0 : prev + 1
-    );
+    setImagenActual((prev) => (prev === archivosMultimediaActuales.length - 1 ? 0 : prev + 1));
   };
 
-  // --- COMPONENTE VISOR DE IMÁGENES MEJORADO ---
   const VisorMultimedia = () => {
     if (!visorAbierto || archivosMultimediaActuales.length === 0) return null;
-
     const archivoActual = archivosMultimediaActuales[imagenActual];
     const tipoArchivo = getFileType(archivoActual);
 
     return (
-      <div className="fixed inset-0 bg-gray-900 z-[2000] flex flex-col">
-        {/* Header oscuro */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gray-800 border-b border-gray-700">
-          <div className="flex items-center gap-4">
-            <div>
-              <h3 className="font-semibold text-white">Multimedia</h3>
-              <p className="text-sm text-gray-300">
-                {tipoArchivo === "image"
-                  ? "Imagen"
-                  : tipoArchivo === "video"
-                  ? "Video"
-                  : "Archivo"}{" "}
-                {imagenActual + 1} de {archivosMultimediaActuales.length}
-              </p>
-            </div>
+      <div className="fixed inset-0 bg-black/95 z-[2000] flex flex-col animate-fadeIn">
+        <div className="flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 w-full z-50">
+          <div className="text-white/80 text-sm font-medium backdrop-blur-md bg-black/30 px-3 py-1 rounded-full">
+            {imagenActual + 1} / {archivosMultimediaActuales.length}
           </div>
-
-          {/* Botón cerrar a la derecha */}
-          <button
-            onClick={cerrarVisor}
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200"
-          >
-            <svg
-              className="w-6 h-6 text-gray-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+          <button onClick={cerrarVisor} className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all">
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
 
-        {/* Área de contenido principal */}
-        <div className="flex-1 relative bg-gray-900 flex items-center justify-center p-4">
-          {/* Botón anterior */}
+        <div className="flex-1 flex items-center justify-center p-4 relative">
           {archivosMultimediaActuales.length > 1 && (
-            <button
-              onClick={imagenAnterior}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-gray-800/90 hover:bg-gray-700 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-gray-600 transition-all duration-200 hover:scale-105"
-            >
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
+            <>
+              <button onClick={imagenAnterior} className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all hover:scale-110 z-10">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button onClick={imagenSiguiente} className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all hover:scale-110 z-10">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </>
           )}
 
-          {/* Contenido multimedia */}
-          <div className="max-w-5xl max-h-[80vh] mx-auto w-full">
+          <div className="max-w-6xl max-h-[85vh] flex items-center justify-center">
             {tipoArchivo === "image" ? (
-              <div className="flex items-center justify-center h-full w-full">
-                <div className="relative max-w-full max-h-full overflow-auto">
-                  <img
-                    src={archivoActual}
-                    alt={`Imagen ${imagenActual + 1}`}
-                    className="max-w-none max-h-none object-scale-down"
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: "70vh",
-                      width: "auto",
-                      height: "auto",
-                    }}
-                  />
-                </div>
-              </div>
+              <img src={archivoActual} alt="Vista previa" className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
             ) : tipoArchivo === "video" ? (
-              <div className="flex items-center justify-center h-full w-full">
-                <div className="relative max-w-full max-h-full">
-                  <video
-                    controls
-                    autoPlay
-                    className="max-w-full max-h-full"
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: "70vh",
-                    }}
-                  >
-                    <source src={archivoActual} type="video/mp4" />
-                    Tu navegador no soporta el elemento video.
-                  </video>
-                </div>
-              </div>
+              <video src={archivoActual} controls autoPlay className="max-w-full max-h-[85vh] rounded-lg shadow-2xl" />
             ) : (
-              <div className="bg-gray-800 rounded-xl p-8 text-center max-w-md border border-gray-700">
-                <svg
-                  className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h4 className="text-lg font-semibold text-white mb-2">
-                  Archivo no visualizable
-                </h4>
-                <p className="text-gray-400 mb-4">
-                  Este tipo de archivo no puede mostrarse en el visor.
-                </p>
-              </div>
+              <div className="text-white text-center">Archivo no soportado</div>
             )}
           </div>
-
-          {/* Botón siguiente */}
-          {archivosMultimediaActuales.length > 1 && (
-            <button
-              onClick={imagenSiguiente}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-gray-800/90 hover:bg-gray-700 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-gray-600 transition-all duration-200 hover:scale-105"
-            >
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          )}
         </div>
 
-        {/* Miniaturas inferiores */}
         {archivosMultimediaActuales.length > 1 && (
-          <div className="bg-gray-800 border-t border-gray-700 p-4">
-            <div className="flex justify-center gap-2 overflow-x-auto pb-2">
-              {archivosMultimediaActuales.map((archivo, idx) => {
-                const tipo = getFileType(archivo);
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setImagenActual(idx)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 transition-all duration-200 ${
-                      idx === imagenActual
-                        ? "border-blue-500 ring-2 ring-blue-500/30"
-                        : "border-gray-600 hover:border-gray-500"
-                    }`}
-                  >
-                    {tipo === "image" ? (
-                      <img
-                        src={archivo}
-                        alt={`Miniatura ${idx + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : tipo === "video" ? (
-                      <div className="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-gray-300"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    ) : (
-                      <div className="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="bg-black/50 backdrop-blur-md p-4 flex justify-center gap-2 overflow-x-auto">
+            {archivosMultimediaActuales.map((src, idx) => (
+              <button
+                key={idx}
+                onClick={() => setImagenActual(idx)}
+                className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${idx === imagenActual ? "border-blue-500 scale-110" : "border-transparent opacity-60 hover:opacity-100"}`}
+              >
+                {getFileType(src) === "image" ? (
+                  <img src={src} className="w-full h-full object-cover" alt="miniatura" />
+                ) : (
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center"><span className="text-xs text-white">Video</span></div>
+                )}
+              </button>
+            ))}
           </div>
         )}
       </div>
     );
   };
 
-  // --- LÓGICA DE DATOS ---
-  useEffect(() => {
-    cargarColecciones();
-  }, []);
-
-  useEffect(() => {
-    if (bounds && zoom >= zoomMinimoParaHechos) {
-      cargarHechosParaAreaVisible();
-    }
-  }, [
-    bounds,
-    zoom,
-    filtrosAplicados,
-    coleccionAplicada,
-    modoColeccionAplicada,
-  ]);
+  useEffect(() => { cargarColecciones(); }, []);
+  useEffect(() => { if (bounds && zoom >= zoomMinimoParaHechos) cargarHechosParaAreaVisible(); }, [bounds, zoom, filtrosAplicados, coleccionAplicada, modoColeccionAplicada]);
 
   const cargarColecciones = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/colecciones`);
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
+      const res = await fetch(`${API_BASE_URL}/colecciones`);
+      const data = await res.json();
       setColecciones(data.colecciones || []);
-    } catch (error) {
-      console.error("Error cargando colecciones:", error);
-      setColecciones([]);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const cargarHechosParaAreaVisible = async () => {
     if (!bounds) return;
-    try {
-      setInfoMapa("Cargando hechos...");
-      const params = new URLSearchParams();
-      const { _southWest, _northEast } = bounds;
-      params.append("sur", _southWest.lat);
-      params.append("oeste", _southWest.lng);
-      params.append("norte", _northEast.lat);
-      params.append("este", _northEast.lng);
-
-      Object.entries(filtrosAplicados).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
-
-      if (coleccionAplicada) {
-        params.append("coleccionId", coleccionAplicada.handle);
-        params.append("modo", modoColeccionAplicada);
-      }
-
-      const url = `${API_BASE_URL}/hechos?${params.toString()}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
-
-      if (data && data.hechos && Array.isArray(data.hechos)) {
-        setMarcadores(data.hechos);
-        setInfoMapa(
-          `Cargados ${data.hechos_encontrados || data.hechos.length} hechos`
-        );
-      } else {
-        setMarcadores([]);
-        setInfoMapa("No se encontraron hechos");
-      }
-    } catch (error) {
-      console.error("Error cargando hechos:", error);
-      setInfoMapa("Error cargando hechos");
+    setInfoMapa("Cargando hechos...");
+    const params = new URLSearchParams();
+    const { _southWest, _northEast } = bounds;
+    params.append("sur", _southWest.lat); params.append("oeste", _southWest.lng);
+    params.append("norte", _northEast.lat); params.append("este", _northEast.lng);
+    Object.entries(filtrosAplicados).forEach(([k, v]) => v && params.append(k, v));
+    
+    if (coleccionAplicada) {
+      params.append("coleccionId", coleccionAplicada.handle);
+      params.append("modo", modoColeccionAplicada);
     }
-  };
 
-  // --- LÓGICA DE FILTROS ---
-  const handleFiltroChange = (campo, valor) => {
-    setFiltrosPendientes((prev) => ({ ...prev, [campo]: valor }));
-  };
-
-  const cambiarColeccionPendiente = (event) => {
-    const selectedValue = event.target.value;
-    const coleccion =
-      colecciones.find((c) => c.handle === selectedValue) || null;
-    setColeccionPendiente(coleccion);
-  };
-
-  const cambiarModoColeccionPendiente = (modo) => {
-    setModoColeccionPendiente(modo);
-  };
-
-  const aplicarFiltros = () => {
-    const filtrosConFechasFormateadas = { ...filtrosPendientes };
-    const camposFecha = [
-      "desdeAcontecimiento",
-      "hastaAcontecimiento",
-      "desdeCarga",
-      "hastaCarga",
-    ];
-    camposFecha.forEach((campo) => {
-      if (
-        filtrosConFechasFormateadas[campo] &&
-        !filtrosConFechasFormateadas[campo].includes("T")
-      ) {
-        filtrosConFechasFormateadas[
-          campo
-        ] = `${filtrosConFechasFormateadas[campo]}T00:00:00`;
+    try {
+      const res = await fetch(`${API_BASE_URL}/hechos?${params.toString()}`);
+      const data = await res.json();
+      if (data?.hechos) {
+        setMarcadores(data.hechos);
+        setInfoMapa(`Cargados ${data.hechos_encontrados || data.hechos.length} hechos`);
+      } else {
+        setMarcadores([]); setInfoMapa("No se encontraron hechos");
       }
-    });
-    setFiltrosAplicados(filtrosConFechasFormateadas);
+    } catch (e) { console.error(e); setInfoMapa("Error cargando hechos"); }
+  };
+
+  const handleFiltroChange = (c, v) => setFiltrosPendientes(prev => ({ ...prev, [c]: v }));
+  const cambiarColeccionPendiente = (e) => setColeccionPendiente(colecciones.find(c => c.handle === e.target.value) || null);
+  const aplicarFiltros = () => {
+    setFiltrosAplicados(filtrosPendientes);
     setColeccionAplicada(coleccionPendiente);
     setModoColeccionAplicada(modoColeccionPendiente);
     setPanelFiltrosAbierto(false);
   };
-
   const limpiarFiltros = () => {
-    const filtrosVacios = {
-      titulo: "",
-      descripcion: "",
-      categoria: "",
-      tipoFuente: "",
-      contieneMultimedia: "",
-      desdeAcontecimiento: "",
-      hastaAcontecimiento: "",
-      desdeCarga: "",
-      hastaCarga: "",
-      estadoDeseado: "",
-    };
-    setFiltrosPendientes(filtrosVacios);
-    setFiltrosAplicados(filtrosVacios);
-    setColeccionPendiente(null);
-    setColeccionAplicada(null);
-    setModoColeccionPendiente("curada");
-    setModoColeccionAplicada("curada");
-    setMarcadores([]);
-    setInfoMapa("Filtros limpiados");
+    const vacio = { titulo: "", descripcion: "", categoria: "", tipoFuente: "", contieneMultimedia: "", desdeAcontecimiento: "", hastaAcontecimiento: "", estadoDeseado: "" };
+    setFiltrosPendientes(vacio); setFiltrosAplicados(vacio);
+    setColeccionPendiente(null); setColeccionAplicada(null);
     setPanelFiltrosAbierto(false);
   };
 
-  // --- FUNCIÓN REPORTAR HECHO ---
-  const reportarHecho = (hecho) => {
-    const hechoId = hecho.id || hecho._id || hecho.codigo || "desconocido";
-    window.location.href = `solicitarEliminacion/${hechoId}`;
-  };
+  const reportarHecho = (hecho) => window.location.href = `solicitarEliminacion/${hecho.id || hecho.hecho_id}`;
+
   return (
     <>
-      <style jsx>{`
-        .leaflet-container {
-          cursor: default !important;
-          font-family: "Inter", sans-serif;
+      <style>{`
+        /* ESTILOS BASE (MODO CLARO) */
+        .leaflet-popup-content-wrapper {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          padding: 0;
+          overflow: hidden;
         }
-        .leaflet-container .leaflet-interactive {
-          cursor: pointer !important;
+        .leaflet-popup-tip {
+          background: rgba(255, 255, 255, 0.95);
         }
-        /* Ocultar atribución para diseño limpio (opcional, cuidado con licencias) */
-        .leaflet-control-attribution {
-          opacity: 0.5;
-          font-size: 10px;
+        .leaflet-popup-content {
+          margin: 0 !important;
+          width: 320px !important;
+        }
+        .leaflet-container a.leaflet-popup-close-button {
+          color: #666;
+          font-size: 18px;
+          padding: 8px;
+          top: 4px;
+          right: 4px;
+          transition: all 0.2s;
+          z-index: 10;
+        }
+        .leaflet-container a.leaflet-popup-close-button:hover {
+          color: #000;
+          background: rgba(0,0,0,0.05);
+          border-radius: 50%;
         }
 
-        /* Ajuste móvil */
-        @media (max-width: 1024px) {
-          .leaflet-bottom {
-            bottom: 90px !important;
-          }
+        /* --- MODO OSCURO (ACTIVADO POR CLASE .dark) --- */
+        /* Importante: Usamos la clase .dark global para sobreescribir */
+        .dark .leaflet-popup-content-wrapper {
+             background: rgba(31, 41, 55, 0.95) !important; /* gray-800 */
+             border-color: rgba(255, 255, 255, 0.1);
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .dark .leaflet-popup-tip {
+             background: rgba(31, 41, 55, 0.95) !important;
+        }
+        .dark .leaflet-container a.leaflet-popup-close-button {
+             color: #ccc;
+        }
+        .dark .leaflet-container a.leaflet-popup-close-button:hover {
+             color: #fff;
+             background: rgba(255,255,255,0.1);
         }
       `}</style>
 
-      <div className="h-screen w-full relative overflow-hidden dark:bg-gray-900">
-        {/* --- MAPA --- */}
+      <div className="h-screen w-full relative overflow-hidden bg-gray-900">
         <MapContainer
           center={[-38.4161, -63.6167]}
           zoom={4}
           zoomControl={false}
-          style={{ height: "100%", width: "100%", zIndex: 0 }}
+          style={{ height: "100%", width: "100%" }}
           minZoom={4}
-          maxZoom={15.5}
-          maxBounds={[
-            [-55.0, -73.0],
-            [-21.0, -53.0],
-          ]}
+          maxZoom={18}
         >
           <ZoomControl position="bottomright" />
+          
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
 
-          <MapEvents
-            onBoundsChange={setBounds}
-            onZoomChange={setZoom}
-            zoomMinimoParaHechos={zoomMinimoParaHechos}
-            setInfoMapa={setInfoMapa}
-            setMarcadores={setMarcadores}
-          />
+          <MapEvents onBoundsChange={setBounds} onZoomChange={setZoom} zoomMinimoParaHechos={zoomMinimoParaHechos} setInfoMapa={setInfoMapa} setMarcadores={setMarcadores} />
 
-          {/* Renderizado de Marcadores (Igual que antes) */}
           {marcadores.map((hecho, index) => (
-            <Marker
-              key={index}
-              position={[parseFloat(hecho.latitud), parseFloat(hecho.longitud)]}
-              icon={obtenerIconoParaHecho(hecho)}
-            >
-              <Popup className="custom-popup">
-                {/* ... (Tu contenido del popup se mantiene igual) ... */}
-                <div className="min-w-64 max-w-sm">
-                  <h4 className="font-bold text-lg text-gray-800 mb-1">
-                    {hecho.titulo || "Sin título"}
-                  </h4>
-                  <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-500 font-medium mb-2 uppercase">
-                    {hecho.categoria}
-                  </span>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">
-                    {hecho.descripcion}
-                  </p>
+            <Marker key={index} position={[parseFloat(hecho.latitud), parseFloat(hecho.longitud)]} icon={obtenerIconoParaHecho(hecho)}>
+              <Popup closeButton={true}>
+                {/* --- POPUP CARD --- */}
+                {/* Nota: No ponemos bg-color aquí porque lo maneja el wrapper de Leaflet arriba */}
+                <div className="flex flex-col transition-colors duration-300">
+                  
+                  {/* Encabezado */}
+                  <div className="px-5 pt-5 pb-2">
+                    <span className="inline-block px-2.5 py-1 rounded-md bg-blue-100/80 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider border border-blue-200/50 dark:border-blue-800/50">
+                      {hecho.categoria || "General"}
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-2 leading-tight">
+                      {hecho.titulo || "Hecho sin título"}
+                    </h3>
+                  </div>
 
-                  {hecho.archivosMultimedia &&
-                    hecho.archivosMultimedia.length > 0 && (
+                  {/* Sugerencia del Admin (Si existe) */}
+                  {hecho.sugerencia_cambio && (
+                    <div className="mx-5 px-3 py-2 bg-yellow-50/80 dark:bg-yellow-900/30 border-l-2 border-yellow-400 rounded-r-md">
+                      <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-200 uppercase mb-0.5">Nota de moderación</p>
+                      <p className="text-xs text-yellow-800 dark:text-yellow-100 italic leading-snug">
+                        "{hecho.sugerencia_cambio}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Cuerpo */}
+                  <div className="px-5 pb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mt-2 line-clamp-4">
+                      {hecho.descripcion || "Sin descripción disponible."}
+                    </p>
+                    {hecho.fechaAcontecimiento && (
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 font-medium">
+                            Ocurrido el: {new Date(hecho.fechaAcontecimiento).toLocaleDateString()}
+                        </p>
+                    )}
+                  </div>
+
+                  {/* Footer con Botones */}
+                  <div className="bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-600 p-3 flex gap-2">
+                    {hecho.archivosMultimedia?.length > 0 && (
                       <button
-                        onClick={() => abrirVisor(hecho.archivosMultimedia, 0)}
-                        className="w-full mb-2 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-black transition-colors"
+                        onClick={() => abrirVisor(hecho.archivosMultimedia)}
+                        className="flex-1 py-2 bg-gray-900 hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-xs font-bold rounded-lg shadow-md transition-all hover:scale-[1.02] active:scale-95"
                       >
-                        Ver Multimedia ({hecho.archivosMultimedia.length})
+                        Ver Fotos ({hecho.archivosMultimedia.length})
                       </button>
                     )}
-                  <button
-                    onClick={() => reportarHecho(hecho)}
-                    className="w-full py-1.5 text-red-500 text-xs font-semibold hover:bg-red-50 rounded transition-colors"
-                  >
-                    Reportar problema
-                  </button>
+                    
+                    {/* BOTÓN REPORTAR: ROJO SOLIDO SIEMPRE */}
+                    <button
+                      onClick={() => reportarHecho(hecho)}
+                      className={`flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95 ${!hecho.archivosMultimedia?.length ? 'w-full' : ''}`}
+                    >
+                      Reportar
+                    </button>
+                  </div>
                 </div>
               </Popup>
             </Marker>
           ))}
         </MapContainer>
 
-        {/* --- CAPA SUPERIOR (UI FLOTANTE) --- */}
-
-        {/* --- CAPA SUPERIOR (UI FLOTANTE) --- */}
-
-        {/* Botón flotante Responsive:
-            - Mobile: Solo ícono (círculo), pegado a la izquierda (left-4)
-            - Desktop: Píldora con texto (md:pl-4...)
-        */}
+        {/* --- BOTÓN DE FILTROS FLOTANTE ARREGLADO (MODO OSCURO AGREGADO) --- */}
         <div className="absolute top-32 left-4 z-[1000] md:top-24">
           <button
             onClick={() => setPanelFiltrosAbierto(true)}
-            className="
-              group flex items-center justify-center
-              p-2 md:pl-4 md:pr-6 md:py-3.5 
-              bg-white/90 dark:bg-gray-900/90 backdrop-blur-md 
-              rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] 
-              border border-white/40 dark:border-gray-700/30 
-              transition-all duration-300 hover:scale-[1.03]
-              gap-0 md:gap-3
-            "
+            className="group flex items-center p-2 md:pl-4 md:pr-6 md:py-3.5 
+                       bg-white/90 dark:bg-gray-800/90 
+                       backdrop-blur-md rounded-full shadow-lg 
+                       border border-white/40 dark:border-gray-600 
+                       transition-all hover:scale-105 gap-0 md:gap-3"
           >
-            {/* ... (el contenido del botón sigue igual) ... */}
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors relative">
+            {/* Ícono de filtros */}
+            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-600 relative transition-colors">
               <FiltroIcono />
-              {(filtrosAplicados.categoria ||
-                filtrosAplicados.titulo ||
-                filtrosAplicados.desdeAcontecimiento ||
-                coleccionAplicada) && (
-                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"></span>
-              )}
+              {(filtrosAplicados.categoria || coleccionAplicada) && <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-800"></span>}
             </div>
-
+            
+            {/* Texto de filtros */}
             <div className="hidden md:flex flex-col text-left">
-              <span className="font-bold text-gray-900 dark:text-white text-sm leading-tight">
-                Filtros
-              </span>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 leading-tight group-hover:text-gray-700 dark:group-hover:text-gray-300">
-                {coleccionAplicada ? "Colección activa" : "Personalizar mapa"}
-              </span>
+              <span className="font-bold text-gray-900 dark:text-white text-sm">Filtros</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{coleccionAplicada ? "Colección activa" : "Personalizar"}</span>
             </div>
           </button>
         </div>
 
-        {/* Panel Filtros (Componente Nuevo) */}
-        <FiltrosPanel
-          isOpen={panelFiltrosAbierto}
-          onClose={() => setPanelFiltrosAbierto(false)}
-          colecciones={colecciones}
-          filtros={filtrosPendientes}
-          coleccionPendiente={coleccionPendiente}
-          modoColeccionPendiente={modoColeccionPendiente}
-          coleccionAplicada={coleccionAplicada}
-          onFiltroChange={handleFiltroChange}
-          onColeccionChange={cambiarColeccionPendiente}
-          onModoChange={cambiarModoColeccionPendiente}
-          onLimpiar={limpiarFiltros}
-          onAplicar={aplicarFiltros}
+        <FiltrosPanel 
+            isOpen={panelFiltrosAbierto} onClose={() => setPanelFiltrosAbierto(false)}
+            colecciones={colecciones} filtros={filtrosPendientes} coleccionPendiente={coleccionPendiente} modoColeccionPendiente={modoColeccionPendiente} coleccionAplicada={coleccionAplicada}
+            onFiltroChange={handleFiltroChange} onColeccionChange={cambiarColeccionPendiente} onModoChange={(modo) => setModoColeccionPendiente(modo)}
+            onLimpiar={limpiarFiltros} onAplicar={aplicarFiltros}
         />
 
-        {/* Visor Multimedia */}
         <VisorMultimedia />
 
-        {/* Barra Info Flotante (Pill inferior) */}
-        <div className="absolute bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[999]">
-          <div className="px-4 py-2 bg-gray-900/80 backdrop-blur-md rounded-full text-white text-xs font-medium shadow-lg flex items-center gap-3">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[999]">
+          <div className="px-5 py-2.5 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-full text-gray-800 dark:text-white text-xs font-bold shadow-xl border border-white/50 dark:border-gray-600 flex items-center gap-3">
             <span>{infoMapa}</span>
-            <span className="w-px h-3 bg-gray-600"></span>
-            <span className="opacity-80">Zoom: {zoom.toFixed(1)}</span>
+            <span className="w-px h-3 bg-gray-300 dark:bg-gray-600"></span>
+            <span className="text-gray-500 dark:text-gray-400">Zoom: {zoom.toFixed(1)}</span>
           </div>
         </div>
       </div>
