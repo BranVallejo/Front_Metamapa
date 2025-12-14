@@ -1,6 +1,9 @@
 import "./App.css";
 import Header from "./pages/Header";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"; 
+import "leaflet/dist/leaflet.css";
+
+// Pages
 import MapaPrincipal from "./pages/MapaPrincipal";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -9,18 +12,20 @@ import MisHechos from "./pages/misHechos";
 import HechoDetalle from "./pages/HechoDetalle";
 import GestionColecciones from "./pages/Coleccion";
 import EditarHecho from "./pages/EditarHecho";
-import PaginaReporte from "./pages/SolicitudEliminacion";
-import ModuloSolicitudesAdmin from "./pages/TodasSolicitudes";
-import "leaflet/dist/leaflet.css";
 import Estadisticas from "./pages/Estadisticas";
-// 👇 1. Importamos la nueva página
 import Fuentes from "./pages/Fuentes";
 
-// Creamos este componente para manejar la lógica de la UI según la ruta
+// Solicitudes (Usuario)
+import PaginaReporte from "./pages/SolicitudEliminacion"; // Formulario para reportar
+
+// Solicitudes (Admin - Nuevo Módulo con Pestañas)
+// 👇 AQUÍ ESTÁ EL CAMBIO DE RUTA SEGÚN TU ESTRUCTURA DE CARPETAS
+import ModuloSolicitudesAdmin from "./pages/Solicitudes/ModuloSolicitudesAdmin"; 
+
 function AppContent() {
   const location = useLocation();
   
-  // Detectamos si estamos en la Home (el mapa)
+  // Detectamos si estamos en la Home (el mapa) para ajustar el layout
   const isMap = location.pathname === "/";
 
   return (
@@ -32,23 +37,31 @@ function AppContent() {
 
       <main className={`flex-grow ${isMap ? "h-screen w-full overflow-hidden" : "pt-20 pb-6 px-4 md:px-8"}`}>
         <Routes>
+          {/* Rutas Públicas / Generales */}
           <Route path="/" element={<MapaPrincipal />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* Rutas de Hechos */}
           <Route path="/hechos/nuevo" element={<ReportarHecho />} />
-
           <Route path="/misHechos" element={<MisHechos />} />
           <Route path="/hechos/:id" element={<HechoDetalle />} />
+          <Route path="/hechos/editar/:id" element={<EditarHecho />} />
+
+          {/* Rutas de Administración */}
           <Route path="/colecciones" element={<GestionColecciones />} />
           <Route path="/fuentes" element={<Fuentes />} />
-          <Route path="/hechos/editar/:id" element={<EditarHecho />} />
           <Route path="/estadisticas" element={<Estadisticas />} />
 
+          {/* Ruta para que el USUARIO reporte un hecho (Formulario) */}
           <Route
             path="/solicitarEliminacion/:idHecho"
             element={<PaginaReporte />}
           />
 
+          {/* Ruta para que el ADMIN gestione las solicitudes (Aprobación y Eliminación) */}
+          {/* Nota: Mantuve el path "/solicitudes-eliminacion" para que coincida con tu Header, 
+              aunque ahora el módulo hace más cosas (Aprobar y Eliminar) */}
           <Route
             path="/solicitudes-eliminacion"
             element={<ModuloSolicitudesAdmin />}
