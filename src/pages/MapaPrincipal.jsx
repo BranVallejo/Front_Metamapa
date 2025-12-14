@@ -162,6 +162,7 @@ const MapaPrincipal = () => {
     hastaAcontecimiento: "",
     desdeCarga: "",
     hastaCarga: "",
+    estadoDeseado: "VISIBLE",
   });
   const [filtrosAplicados, setFiltrosAplicados] = useState({
     ...filtrosPendientes,
@@ -221,8 +222,8 @@ const MapaPrincipal = () => {
                 {tipoArchivo === "image"
                   ? "Imagen"
                   : tipoArchivo === "video"
-                    ? "Video"
-                    : "Archivo"}{" "}
+                  ? "Video"
+                  : "Archivo"}{" "}
                 {imagenActual + 1} de {archivosMultimediaActuales.length}
               </p>
             </div>
@@ -366,10 +367,11 @@ const MapaPrincipal = () => {
                   <button
                     key={idx}
                     onClick={() => setImagenActual(idx)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 transition-all duration-200 ${idx === imagenActual
-                      ? "border-blue-500 ring-2 ring-blue-500/30"
-                      : "border-gray-600 hover:border-gray-500"
-                      }`}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 transition-all duration-200 ${
+                      idx === imagenActual
+                        ? "border-blue-500 ring-2 ring-blue-500/30"
+                        : "border-gray-600 hover:border-gray-500"
+                    }`}
                   >
                     {tipo === "image" ? (
                       <img
@@ -534,6 +536,7 @@ const MapaPrincipal = () => {
       hastaAcontecimiento: "",
       desdeCarga: "",
       hastaCarga: "",
+      estadoDeseado: "",
     };
     setFiltrosPendientes(filtrosVacios);
     setFiltrosAplicados(filtrosVacios);
@@ -556,22 +559,26 @@ const MapaPrincipal = () => {
       <style jsx>{`
         .leaflet-container {
           cursor: default !important;
-          font-family: 'Inter', sans-serif;
+          font-family: "Inter", sans-serif;
         }
         .leaflet-container .leaflet-interactive {
           cursor: pointer !important;
         }
         /* Ocultar atribución para diseño limpio (opcional, cuidado con licencias) */
-        .leaflet-control-attribution { opacity: 0.5; font-size: 10px; }
-        
+        .leaflet-control-attribution {
+          opacity: 0.5;
+          font-size: 10px;
+        }
+
         /* Ajuste móvil */
         @media (max-width: 1024px) {
-          .leaflet-bottom { bottom: 90px !important; }
+          .leaflet-bottom {
+            bottom: 90px !important;
+          }
         }
       `}</style>
 
       <div className="h-screen w-full relative overflow-hidden dark:bg-gray-900">
-
         {/* --- MAPA --- */}
         <MapContainer
           center={[-38.4161, -63.6167]}
@@ -580,7 +587,10 @@ const MapaPrincipal = () => {
           style={{ height: "100%", width: "100%", zIndex: 0 }}
           minZoom={4}
           maxZoom={15.5}
-          maxBounds={[[-55.0, -73.0], [-21.0, -53.0]]}
+          maxBounds={[
+            [-55.0, -73.0],
+            [-21.0, -53.0],
+          ]}
         >
           <ZoomControl position="bottomright" />
           <TileLayer
@@ -606,18 +616,25 @@ const MapaPrincipal = () => {
               <Popup className="custom-popup">
                 {/* ... (Tu contenido del popup se mantiene igual) ... */}
                 <div className="min-w-64 max-w-sm">
-                  <h4 className="font-bold text-lg text-gray-800 mb-1">{hecho.titulo || "Sin título"}</h4>
-                  <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-500 font-medium mb-2 uppercase">{hecho.categoria}</span>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">{hecho.descripcion}</p>
+                  <h4 className="font-bold text-lg text-gray-800 mb-1">
+                    {hecho.titulo || "Sin título"}
+                  </h4>
+                  <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-500 font-medium mb-2 uppercase">
+                    {hecho.categoria}
+                  </span>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                    {hecho.descripcion}
+                  </p>
 
-                  {hecho.archivosMultimedia && hecho.archivosMultimedia.length > 0 && (
-                    <button
-                      onClick={() => abrirVisor(hecho.archivosMultimedia, 0)}
-                      className="w-full mb-2 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-black transition-colors"
-                    >
-                      Ver Multimedia ({hecho.archivosMultimedia.length})
-                    </button>
-                  )}
+                  {hecho.archivosMultimedia &&
+                    hecho.archivosMultimedia.length > 0 && (
+                      <button
+                        onClick={() => abrirVisor(hecho.archivosMultimedia, 0)}
+                        className="w-full mb-2 py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-black transition-colors"
+                      >
+                        Ver Multimedia ({hecho.archivosMultimedia.length})
+                      </button>
+                    )}
                   <button
                     onClick={() => reportarHecho(hecho)}
                     className="w-full py-1.5 text-red-500 text-xs font-semibold hover:bg-red-50 rounded transition-colors"
@@ -654,7 +671,10 @@ const MapaPrincipal = () => {
             {/* ... (el contenido del botón sigue igual) ... */}
             <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors relative">
               <FiltroIcono />
-              {(filtrosAplicados.categoria || filtrosAplicados.titulo || filtrosAplicados.desdeAcontecimiento || coleccionAplicada) && (
+              {(filtrosAplicados.categoria ||
+                filtrosAplicados.titulo ||
+                filtrosAplicados.desdeAcontecimiento ||
+                coleccionAplicada) && (
                 <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"></span>
               )}
             </div>
@@ -697,7 +717,6 @@ const MapaPrincipal = () => {
             <span className="opacity-80">Zoom: {zoom.toFixed(1)}</span>
           </div>
         </div>
-
       </div>
     </>
   );
