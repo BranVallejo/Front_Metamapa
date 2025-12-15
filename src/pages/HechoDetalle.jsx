@@ -135,11 +135,7 @@ const HechoDetalle = () => {
                   </div>
                </div>
 
-               <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-white/20 dark:bg-black/30 backdrop-blur-md border border-white/20 rounded-full text-xs font-mono">
-                     ID: {hecho.id}
-                  </span>
-               </div>
+
             </div>
 
             {/* GRID PRINCIPAL */}

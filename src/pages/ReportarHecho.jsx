@@ -6,10 +6,29 @@ import { Toaster, toast } from "sonner";
 import MapaSelectorCoordenadas from "../Components/MapaSelectorCoordenadas";
 import FondoChill from "../Components/FondoDinamico/FondoChill";
 
+// --- LISTA DE CATEGORÍAS ---
+// La sacamos afuera para no ensuciar el JSX y poder mapearla fácil
+const CATEGORIAS = [
+  "vientos fuertes",
+  "inundaciones",
+  "granizo",
+  "nevadas",
+  "calor extremo",
+  "sequía",
+  "derrumbes",
+  "actividad volcánica",
+  "incendios",
+  "contaminación",
+  "evento sanitario",
+  "derrame",
+  "intoxicación masiva",
+  "Otro",
+];
+
 const ReportarHecho = () => {
   const navigate = useNavigate();
 
-  // --- LÓGICA (Sin cambios, solo funciona) ---
+  // --- LÓGICA ---
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   const maxDate = now.toISOString().slice(0, 16);
@@ -127,9 +146,10 @@ const ReportarHecho = () => {
     }
   };
 
-  // Estilos reutilizables para inputs "Glass"
+  // Estilos reutilizables
+  // Estilos reutilizables
   const inputClass =
-    "w-full px-4 py-3 bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 backdrop-blur-sm";
+    "w-full px-4 py-3 bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 backdrop-blur-sm dark:[&::-webkit-calendar-picker-indicator]:invert";
   const labelClass =
     "block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 opacity-80";
 
@@ -146,8 +166,7 @@ const ReportarHecho = () => {
               Nuevo Reporte
             </h1>
             <p className="text-gray-600 dark:text-gray-300 font-medium mt-2 max-w-md">
-              Ayuda a la comunidad reportando incidentes climáticos o
-              ambientales.
+              Ayuda a la comunidad reportando incidentes climáticos o ambientales.
             </p>
           </div>
           <button
@@ -158,7 +177,7 @@ const ReportarHecho = () => {
           </button>
         </div>
 
-        {/* TARJETA PRINCIPAL (GLASS FACHERO) */}
+        {/* TARJETA PRINCIPAL */}
         <div className="bg-white/70 dark:bg-gray-900/60 backdrop-blur-2xl border border-white/40 dark:border-white/5 rounded-3xl shadow-2xl p-6 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* SECCIÓN 1: DATOS BÁSICOS */}
@@ -198,6 +217,7 @@ const ReportarHecho = () => {
                   Categoría <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
+                  {/* --- SELECT ARREGLADO --- */}
                   <select
                     name="categoria"
                     value={formData.categoria}
@@ -205,25 +225,19 @@ const ReportarHecho = () => {
                     required
                     className={`${inputClass} appearance-none cursor-pointer`}
                   >
-                    <option value="vientos fuertes">Vientos fuertes</option>
-                    <option value="inundaciones">Inundaciones</option>
-                    <option value="granizo">Granizo</option>
-                    <option value="nevadas">Nevadas</option>
-                    <option value="calor extremo">Calor extremo</option>
-                    <option value="sequía">Sequía</option>
-                    <option value="derrumbes">Derrumbes</option>
-                    <option value="actividad volcánica">
-                      Actividad volcánica
-                    </option>
-                    <option value="incendios">Incendios</option>
-                    <option value="contaminación">Contaminación</option>
-                    <option value="evento sanitario">Evento sanitario</option>
-                    <option value="derrame">Derrame</option>
-                    <option value="intoxicación masiva">
-                      Intoxicación masiva
-                    </option>
-                    <option value="Otro">Otro</option>
+                    {CATEGORIAS.map((cat) => (
+                      <option
+                        key={cat}
+                        value={cat}
+                        // 👇 ESTA CLASE ES LA CLAVE: Fondo sólido en el dropdown para que se lea bien
+                        className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                      >
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
                   </select>
+
+                  {/* Flechita SVG */}
                   <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                       <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -277,7 +291,6 @@ const ReportarHecho = () => {
                   longitud={parseFloat(formData.longitud)}
                   onCoordenadasChange={handleMapClick}
                 />
-                {/* Overlay sutil de instrucciones */}
                 {!formData.latitud && (
                   <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none group-hover:bg-transparent transition-colors">
                     <span className="bg-white/80 dark:bg-black/60 backdrop-blur text-xs px-3 py-1 rounded-full shadow-lg">
@@ -330,7 +343,7 @@ const ReportarHecho = () => {
                   />
                 </label>
 
-                {/* Lista de archivos moderna */}
+                {/* Lista de archivos */}
                 <div className="flex-1 w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {archivos.length > 0 ? (
                     archivos.map((archivo, index) => (
@@ -367,11 +380,10 @@ const ReportarHecho = () => {
               <button
                 type="submit"
                 disabled={enviando}
-                className={`w-full py-4 px-6 rounded-xl font-bold text-lg text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 ${
-                  enviando
+                className={`w-full py-4 px-6 rounded-xl font-bold text-lg text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 ${enviando
                     ? "bg-gray-400 cursor-wait"
                     : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
-                }`}
+                  }`}
               >
                 {enviando ? (
                   <>

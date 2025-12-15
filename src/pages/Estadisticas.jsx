@@ -133,23 +133,23 @@ const Estadisticas = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
-      {/* 2. COMPONENTE TOASTER DE SONNER */}
-      <Toaster richColors position="top-right" />
+return (
+  <div className="min-h-screen relative overflow-hidden transition-colors duration-300 font-sans">
+    <Toaster richColors position="top-right" />
+    <FondoChill />
 
-      <FondoChill />
-
-      <div className="relative z-10 p-6 md:p-10">
-        {/* Header simplificado sin filtros */}
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white drop-shadow-sm">
-            Dashboard de Estadísticas
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
-            Análisis histórico completo de hechos y reportes.
-          </p>
-        </header>
+    {/* 🔥 AGREGADO: max-w-7xl mx-auto y mt-20 para dar margen superior e igualdad con otras vistas */}
+    <div className="relative z-10 pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
+      
+      {/* Header */}
+      <header className="mb-10">
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-blue-400 dark:to-cyan-300 drop-shadow-sm">
+          Dashboard de Estadísticas
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2 text-lg font-medium">
+          Análisis histórico completo de hechos y reportes.
+        </p>
+      </header>
 
         {loading ? (
           <div className="flex justify-center items-center h-64">

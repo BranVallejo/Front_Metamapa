@@ -218,6 +218,7 @@ const ProfessionalHeader = () => {
       }
     };
     checkAuth();
+    setUserMenuOpen(false);
   }, [location]);
 
   useEffect(() => {
