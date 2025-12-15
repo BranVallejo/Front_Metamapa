@@ -132,7 +132,7 @@ const GestionColecciones = () => {
       titulo: datosFormulario.titulo,
       descripcion: datosFormulario.descripcion,
       algoritmoConsenso: datosFormulario.algoritmoConsenso,
-      tipoFuente: datosFormulario.fuentes,
+      origenesReales: datosFormulario.fuentes,
       criterios: criterios,
     };
   };

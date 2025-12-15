@@ -94,6 +94,9 @@ const ReportarHecho = () => {
       contribuyenteID: contribuyenteID,
     };
 
+    console.log("📤 DTO enviado:");
+    console.log(dto);
+
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("data", JSON.stringify(dto));
@@ -213,7 +216,7 @@ const ReportarHecho = () => {
                       Actividad volcánica
                     </option>
                     <option value="incendios">Incendios</option>
-                    <option value="contaminacion">Contaminación</option>
+                    <option value="contaminación">Contaminación</option>
                     <option value="evento sanitario">Evento sanitario</option>
                     <option value="derrame">Derrame</option>
                     <option value="intoxicación masiva">

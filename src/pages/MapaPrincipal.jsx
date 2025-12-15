@@ -122,12 +122,13 @@ const getFileType = (url) => {
   return imageExtensions.includes(extension)
     ? "image"
     : videoExtensions.includes(extension)
-      ? "video"
-      : "unknown";
+    ? "video"
+    : "unknown";
 };
 
 const MapaPrincipal = () => {
   const [panelFiltrosAbierto, setPanelFiltrosAbierto] = useState(false);
+  const [hechoSeleccionadoId, setHechoSeleccionadoId] = useState(null);
   const [marcadores, setMarcadores] = useState([]);
   const [colecciones, setColecciones] = useState([]);
   const [coleccionPendiente, setColeccionPendiente] = useState(null);
@@ -195,7 +196,6 @@ const MapaPrincipal = () => {
          Esto asegura que el fondo negro y el visor tapen ABSOLUTAMENTE TODO, incluido el Navbar.
       */
       <div className="fixed inset-0 bg-black/95 z-[99999] flex flex-col animate-fadeIn">
-
         {/* CAMBIO 2: z-50 -> z-[100000]
            El header interno debe ser mayor o igual al padre para que los botones sean clickeables.
         */}
@@ -292,10 +292,11 @@ const MapaPrincipal = () => {
               <button
                 key={idx}
                 onClick={() => setImagenActual(idx)}
-                className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${idx === imagenActual
+                className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                  idx === imagenActual
                     ? "border-blue-500 scale-110"
                     : "border-transparent opacity-60 hover:opacity-100"
-                  }`}
+                }`}
               >
                 {getFileType(src) === "image" ? (
                   <img
@@ -371,9 +372,6 @@ const MapaPrincipal = () => {
       params.append("modo", modoColeccionAplicada);
     }
 
-    console.log("🌐 URL final:");
-    console.log(`${API_BASE_URL}/hechos?${params.toString()}`);
-
     try {
       const res = await fetch(`${API_BASE_URL}/hechos?${params.toString()}`);
       const data = await res.json();
@@ -423,7 +421,8 @@ const MapaPrincipal = () => {
   };
 
   const reportarHecho = (hecho) =>
-  (window.location.href = `solicitarEliminacion/${hecho.id || hecho.hecho_id
+    (window.location.href = `solicitarEliminacion/${
+      hecho.id || hecho.hecho_id
     }`);
 
   return (
@@ -491,12 +490,10 @@ const MapaPrincipal = () => {
           maxZoom={18}
         >
           <ZoomControl position="bottomright" />
-
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-
           <MapEvents
             onBoundsChange={setBounds}
             onZoomChange={setZoom}
@@ -504,78 +501,99 @@ const MapaPrincipal = () => {
             setInfoMapa={setInfoMapa}
             setMarcadores={setMarcadores}
           />
+          {marcadores.map((hecho, index) => {
+            const hechoId = hecho.id || hecho.hecho_id;
 
-          {marcadores.map((hecho, index) => (
-            <Marker
-              key={index}
-              position={[parseFloat(hecho.latitud), parseFloat(hecho.longitud)]}
-              icon={obtenerIconoParaHecho(hecho)}
-            >
-              <Popup closeButton={true}>
-                {/* --- POPUP CARD --- */}
-                {/* Nota: No ponemos bg-color aquí porque lo maneja el wrapper de Leaflet arriba */}
-                <div className="flex flex-col transition-colors duration-300">
-                  {/* Encabezado */}
-                  <div className="px-5 pt-5 pb-2">
-                    <span className="inline-block px-2.5 py-1 rounded-md bg-blue-100/80 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider border border-blue-200/50 dark:border-blue-800/50">
-                      {hecho.categoria || "General"}
-                    </span>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-2 leading-tight">
-                      {hecho.titulo || "Hecho sin título"}
-                    </h3>
-                  </div>
+            return (
+              <Marker
+                key={hechoId ?? index}
+                position={[
+                  parseFloat(hecho.latitud),
+                  parseFloat(hecho.longitud),
+                ]}
+                icon={obtenerIconoParaHecho(hecho)}
+                eventHandlers={{
+                  click: () => {
+                    setHechoSeleccionadoId(hechoId);
+                  },
+                }}
+              >
+                {hechoSeleccionadoId === hechoId && (
+                  <Popup
+                    autoClose={false}
+                    closeOnClick={false}
+                    closeButton={true}
+                    eventHandlers={{
+                      remove: () => setHechoSeleccionadoId(null),
+                    }}
+                  >
+                    {/* ===== POPUP CARD COMPLETA ===== */}
+                    <div className="flex flex-col transition-colors duration-300">
+                      {/* Encabezado */}
+                      <div className="px-5 pt-5 pb-2">
+                        <span className="inline-block px-2.5 py-1 rounded-md bg-blue-100/80 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider border border-blue-200/50 dark:border-blue-800/50">
+                          {hecho.categoria || "General"}
+                        </span>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-2 leading-tight">
+                          {hecho.titulo || "Hecho sin título"}
+                        </h3>
+                      </div>
 
-                  {/* Sugerencia del Admin (Si existe) */}
-                  {hecho.sugerencia_cambio && (
-                    <div className="mx-5 px-3 py-2 bg-yellow-50/80 dark:bg-yellow-900/30 border-l-2 border-yellow-400 rounded-r-md">
-                      <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-200 uppercase mb-0.5">
-                        Nota de moderación
-                      </p>
-                      <p className="text-xs text-yellow-800 dark:text-yellow-100 italic leading-snug">
-                        "{hecho.sugerencia_cambio}"
-                      </p>
+                      {/* Sugerencia del Admin */}
+                      {hecho.sugerencia_cambio && (
+                        <div className="mx-5 px-3 py-2 bg-yellow-50/80 dark:bg-yellow-900/30 border-l-2 border-yellow-400 rounded-r-md">
+                          <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-200 uppercase mb-0.5">
+                            Nota de moderación
+                          </p>
+                          <p className="text-xs text-yellow-800 dark:text-yellow-100 italic leading-snug">
+                            "{hecho.sugerencia_cambio}"
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Cuerpo */}
+                      <div className="px-5 pb-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mt-2 line-clamp-4">
+                          {hecho.descripcion || "Sin descripción disponible."}
+                        </p>
+
+                        {hecho.fechaAcontecimiento && (
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 font-medium">
+                            Ocurrido el:{" "}
+                            {new Date(
+                              hecho.fechaAcontecimiento
+                            ).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-600 p-3 flex gap-2">
+                        {hecho.archivosMultimedia?.length > 0 && (
+                          <button
+                            onClick={() => abrirVisor(hecho.archivosMultimedia)}
+                            className="flex-1 py-2 bg-gray-900 hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-xs font-bold rounded-lg shadow-md transition-all hover:scale-[1.02] active:scale-95"
+                          >
+                            Ver Fotos ({hecho.archivosMultimedia.length})
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => reportarHecho(hecho)}
+                          className={`flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95 ${
+                            !hecho.archivosMultimedia?.length ? "w-full" : ""
+                          }`}
+                        >
+                          Reportar
+                        </button>
+                      </div>
                     </div>
-                  )}
-
-                  {/* Cuerpo */}
-                  <div className="px-5 pb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mt-2 line-clamp-4">
-                      {hecho.descripcion || "Sin descripción disponible."}
-                    </p>
-                    {hecho.fechaAcontecimiento && (
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 font-medium">
-                        Ocurrido el:{" "}
-                        {new Date(
-                          hecho.fechaAcontecimiento
-                        ).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Footer con Botones */}
-                  <div className="bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-600 p-3 flex gap-2">
-                    {hecho.archivosMultimedia?.length > 0 && (
-                      <button
-                        onClick={() => abrirVisor(hecho.archivosMultimedia)}
-                        className="flex-1 py-2 bg-gray-900 hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-xs font-bold rounded-lg shadow-md transition-all hover:scale-[1.02] active:scale-95"
-                      >
-                        Ver Fotos ({hecho.archivosMultimedia.length})
-                      </button>
-                    )}
-
-                    {/* BOTÓN REPORTAR: ROJO SOLIDO SIEMPRE */}
-                    <button
-                      onClick={() => reportarHecho(hecho)}
-                      className={`flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95 ${!hecho.archivosMultimedia?.length ? "w-full" : ""
-                        }`}
-                    >
-                      Reportar
-                    </button>
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+                    {/* ===== FIN POPUP CARD ===== */}
+                  </Popup>
+                )}
+              </Marker>
+            );
+          })}
         </MapContainer>
 
         {/* --- BOTÓN DE FILTROS FLOTANTE ARREGLADO (MODO OSCURO AGREGADO) --- */}
