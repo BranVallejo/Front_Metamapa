@@ -21,7 +21,9 @@ const categoriasDisponibles = [
 const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar }) => {
   
   // Estilos
-  const inputClass = "w-full px-4 py-2 bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500/50 outline-none text-sm backdrop-blur-sm transition-all";
+  // 🔥 AGREGADO: "dark:[&::-webkit-calendar-picker-indicator]:invert" al final para que los calendarios se vean blancos en dark mode
+  const inputClass = "w-full px-4 py-2 bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500/50 outline-none text-sm backdrop-blur-sm transition-all dark:[&::-webkit-calendar-picker-indicator]:invert";
+  
   const labelClass = "block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 opacity-80";
   
   // Handlers internos
@@ -81,7 +83,16 @@ const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar
             <div>
                 <label className={labelClass}>Algoritmo</label>
                 <select name="algoritmoConsenso" value={formData.algoritmoConsenso} onChange={handleChange} className={inputClass}>
-                    {algoritmosConsenso.map(opt => <option key={opt.valor} value={opt.valor}>{opt.label}</option>)}
+                    {algoritmosConsenso.map(opt => (
+                        <option 
+                            key={opt.valor} 
+                            value={opt.valor}
+                            // 🔥 FIX: Fondo sólido para las opciones
+                            className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"
+                        >
+                            {opt.label}
+                        </option>
+                    ))}
                 </select>
             </div>
         </div>
