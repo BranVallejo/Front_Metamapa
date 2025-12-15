@@ -11,6 +11,20 @@ const GestionColecciones = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [cargando, setCargando] = useState(false);
 
+  const mapearAlgoritmoBackendAValor = (algoritmo) => {
+    if (!algoritmo) return "mayoriasimple";
+
+    const normalizado = algoritmo
+      .toLowerCase()
+      .replaceAll(" ", "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    if (normalizado === "absoluto") return "absoluto";
+    if (normalizado === "multiplesmenciones") return "multiplesmenciones";
+    return "mayoriasimple";
+  };
+
   // Formulario Inicial
   const initialFormState = {
     titulo: "",
@@ -133,7 +147,7 @@ const GestionColecciones = () => {
     setFormData({
       titulo: coleccion.titulo || "",
       descripcion: coleccion.descripcion || "",
-      algoritmoConsenso: coleccion.algoritmo || "MAYORIASIMPLE",
+      algoritmoConsenso: mapearAlgoritmoBackendAValor(coleccion.algoritmo),
       fuentes: coleccion.origenesReales || [],
       criterios: {
         categoria: criterios
