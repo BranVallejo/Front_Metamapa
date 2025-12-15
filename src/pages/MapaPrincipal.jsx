@@ -122,8 +122,8 @@ const getFileType = (url) => {
   return imageExtensions.includes(extension)
     ? "image"
     : videoExtensions.includes(extension)
-    ? "video"
-    : "unknown";
+      ? "video"
+      : "unknown";
 };
 
 const MapaPrincipal = () => {
@@ -191,14 +191,22 @@ const MapaPrincipal = () => {
     const tipoArchivo = getFileType(archivoActual);
 
     return (
-      <div className="fixed inset-0 bg-black/95 z-[2000] flex flex-col animate-fadeIn">
-        <div className="flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 w-full z-50">
+      /* CAMBIO 1: z-[2000] -> z-[99999] 
+         Esto asegura que el fondo negro y el visor tapen ABSOLUTAMENTE TODO, incluido el Navbar.
+      */
+      <div className="fixed inset-0 bg-black/95 z-[99999] flex flex-col animate-fadeIn">
+
+        {/* CAMBIO 2: z-50 -> z-[100000]
+           El header interno debe ser mayor o igual al padre para que los botones sean clickeables.
+        */}
+        <div className="flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 w-full z-[100000]">
           <div className="text-white/80 text-sm font-medium backdrop-blur-md bg-black/30 px-3 py-1 rounded-full">
             {imagenActual + 1} / {archivosMultimediaActuales.length}
           </div>
           <button
             onClick={cerrarVisor}
-            className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all"
+            /* Agregamos cursor-pointer y aseguramos pointer-events-auto por si acaso */
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all cursor-pointer pointer-events-auto"
           >
             <svg
               className="w-6 h-6 text-white"
@@ -216,12 +224,12 @@ const MapaPrincipal = () => {
           </button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-4 relative">
+        <div className="flex-1 flex items-center justify-center p-4 relative z-[99999]">
           {archivosMultimediaActuales.length > 1 && (
             <>
               <button
                 onClick={imagenAnterior}
-                className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all hover:scale-110 z-10"
+                className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all hover:scale-110 z-[100000]"
               >
                 <svg
                   className="w-6 h-6"
@@ -239,7 +247,7 @@ const MapaPrincipal = () => {
               </button>
               <button
                 onClick={imagenSiguiente}
-                className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all hover:scale-110 z-10"
+                className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all hover:scale-110 z-[100000]"
               >
                 <svg
                   className="w-6 h-6"
@@ -279,16 +287,15 @@ const MapaPrincipal = () => {
         </div>
 
         {archivosMultimediaActuales.length > 1 && (
-          <div className="bg-black/50 backdrop-blur-md p-4 flex justify-center gap-2 overflow-x-auto">
+          <div className="bg-black/50 backdrop-blur-md p-4 flex justify-center gap-2 overflow-x-auto z-[100000]">
             {archivosMultimediaActuales.map((src, idx) => (
               <button
                 key={idx}
                 onClick={() => setImagenActual(idx)}
-                className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
-                  idx === imagenActual
+                className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${idx === imagenActual
                     ? "border-blue-500 scale-110"
                     : "border-transparent opacity-60 hover:opacity-100"
-                }`}
+                  }`}
               >
                 {getFileType(src) === "image" ? (
                   <img
@@ -416,8 +423,7 @@ const MapaPrincipal = () => {
   };
 
   const reportarHecho = (hecho) =>
-    (window.location.href = `solicitarEliminacion/${
-      hecho.id || hecho.hecho_id
+  (window.location.href = `solicitarEliminacion/${hecho.id || hecho.hecho_id
     }`);
 
   return (
@@ -560,9 +566,8 @@ const MapaPrincipal = () => {
                     {/* BOTÓN REPORTAR: ROJO SOLIDO SIEMPRE */}
                     <button
                       onClick={() => reportarHecho(hecho)}
-                      className={`flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95 ${
-                        !hecho.archivosMultimedia?.length ? "w-full" : ""
-                      }`}
+                      className={`flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95 ${!hecho.archivosMultimedia?.length ? "w-full" : ""
+                        }`}
                     >
                       Reportar
                     </button>
