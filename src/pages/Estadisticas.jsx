@@ -27,11 +27,12 @@ const Estadisticas = () => {
   // --- 2. FUNCIÓN DE CARGA DE DATOS (GRÁFICOS) ---
   const cargarEstadisticas = useCallback(async () => {
     setLoading(true);
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
 
-    const authFetch = (url) => fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const authFetch = (url) =>
+      fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
     try {
       // Los endpoints JSON no piden fecha, traen todo el histórico por defecto
@@ -44,11 +45,14 @@ const Estadisticas = () => {
           authFetch(`${API_URL}/provincia-por-categoria`),
         ]);
 
-      const dataRanking = resRanking.status === 204 ? [] : await resRanking.json();
-      const dataCategorias = resCategorias.status === 204 ? [] : await resCategorias.json();
+      const dataRanking =
+        resRanking.status === 204 ? [] : await resRanking.json();
+      const dataCategorias =
+        resCategorias.status === 204 ? [] : await resCategorias.json();
       const dataHoras = resHoras.status === 204 ? [] : await resHoras.json();
       const dataSpam = resSpam.status === 204 ? [] : await resSpam.json();
-      const dataProvCat = resProvCat.status === 204 ? [] : await resProvCat.json();
+      const dataProvCat =
+        resProvCat.status === 204 ? [] : await resProvCat.json();
 
       setRankingProvincias(dataRanking);
       setCategoriasReportadas(dataCategorias);
@@ -59,7 +63,7 @@ const Estadisticas = () => {
       console.error("❌ Error cargando estadísticas:", error);
       // Notificación de error si falla la carga inicial
       toast.error("Error de conexión", {
-        description: "No se pudieron cargar los datos del dashboard."
+        description: "No se pudieron cargar los datos del dashboard.",
       });
     } finally {
       setLoading(false);
@@ -77,7 +81,7 @@ const Estadisticas = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Acceso denegado", {
-            description: "No estás autenticado para descargar este archivo."
+          description: "No estás autenticado para descargar este archivo.",
         });
         return;
       }
@@ -86,8 +90,8 @@ const Estadisticas = () => {
       const toastId = toast.loading("Generando archivo CSV...");
 
       // Definimos fechas "infinitas" para cumplir con el requisito del Backend de Java
-      const fechaInicioHistoria = "2000-01-01"; 
-      const fechaFinHistoria = "2100-12-31"; 
+      const fechaInicioHistoria = "2000-01-01";
+      const fechaFinHistoria = "2100-12-31";
 
       const url = `${API_URL}/${endpointName}/csv?desde=${fechaInicioHistoria}&hasta=${fechaFinHistoria}`;
 
@@ -96,7 +100,7 @@ const Estadisticas = () => {
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -109,7 +113,7 @@ const Estadisticas = () => {
       const a = document.createElement("a");
       a.href = downloadUrl;
       a.download = `${endpointName}_COMPLETO.csv`;
-      
+
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -118,20 +122,19 @@ const Estadisticas = () => {
       // Actualizamos el toast a éxito
       toast.success("Descarga iniciada", {
         id: toastId,
-        description: "El archivo se ha guardado en tu equipo."
+        description: "El archivo se ha guardado en tu equipo.",
       });
-
     } catch (error) {
       console.error("Error descargando CSV:", error);
       toast.error("Error en la descarga", {
-        description: "Hubo un problema al generar el archivo. Intenta nuevamente."
+        description:
+          "Hubo un problema al generar el archivo. Intenta nuevamente.",
       });
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
-      
       {/* 2. COMPONENTE TOASTER DE SONNER */}
       <Toaster richColors position="top-right" />
 
@@ -140,12 +143,12 @@ const Estadisticas = () => {
       <div className="relative z-10 p-6 md:p-10">
         {/* Header simplificado sin filtros */}
         <header className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white drop-shadow-sm">
-              Dashboard de Estadísticas
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">
-              Análisis histórico completo de hechos y reportes.
-            </p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white drop-shadow-sm">
+            Dashboard de Estadísticas
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
+            Análisis histórico completo de hechos y reportes.
+          </p>
         </header>
 
         {loading ? (
@@ -154,12 +157,13 @@ const Estadisticas = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
             {/* FILA 1: Colecciones */}
             <div className="lg:col-span-2">
-              <ColeccionGanadora 
-                 data={rankingProvincias} 
-                 onExport={() => descargarCSV("mayor-hechos-provincia-coleccion")} 
+              <ColeccionGanadora
+                data={rankingProvincias}
+                onExport={() =>
+                  descargarCSV("mayor-hechos-provincia-coleccion")
+                }
               />
             </div>
 
@@ -193,7 +197,6 @@ const Estadisticas = () => {
                 onExport={() => descargarCSV("hora-por-categoria")}
               />
             </div>
-            
           </div>
         )}
       </div>
