@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-// Constantes
+// ✅ CORRECCIÓN: Volvemos a los valores EXACTOS que pide el error del backend
 const algoritmosConsenso = [
   { valor: "absoluto", label: "Absoluto" },
   { valor: "mayoriasimple", label: "Mayoría Simple" },
@@ -20,13 +20,16 @@ const categoriasDisponibles = [
 
 const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar }) => {
   
-  // Estilos
-  // 🔥 AGREGADO: "dark:[&::-webkit-calendar-picker-indicator]:invert" al final para que los calendarios se vean blancos en dark mode
   const inputClass = "w-full px-4 py-2 bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500/50 outline-none text-sm backdrop-blur-sm transition-all dark:[&::-webkit-calendar-picker-indicator]:invert";
-  
   const labelClass = "block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 opacity-80";
   
-  // Handlers internos
+  // ✅ FIX: Inicializamos con "absoluto" (minúscula) si está vacío
+  useEffect(() => {
+    if (!formData.algoritmoConsenso) {
+        setFormData(prev => ({ ...prev, algoritmoConsenso: "absoluto" }));
+    }
+  }, [formData.algoritmoConsenso, setFormData]);
+
   const handleChange = (e) => {
       const { name, value } = e.target;
       if (name.includes(".")) {
@@ -60,17 +63,12 @@ const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar
 
   return (
     <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-2xl shadow-xl p-6 relative overflow-hidden">
-      
-      {/* Cinta de estado */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${modoEdicion ? 'bg-yellow-500' : 'bg-blue-500'}`} />
-
       <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
         {modoEdicion ? <span className="text-yellow-600 dark:text-yellow-400">✏️ Editando</span> : <span className="text-blue-600 dark:text-blue-400">✨ Nueva Colección</span>}
       </h2>
 
       <div className="space-y-5">
-        
-        {/* BÁSICOS */}
         <div className="space-y-3">
             <div>
                 <label className={labelClass}>Título</label>
@@ -82,24 +80,28 @@ const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar
             </div>
             <div>
                 <label className={labelClass}>Algoritmo</label>
-                <select name="algoritmoConsenso" value={formData.algoritmoConsenso} onChange={handleChange} className={inputClass}>
+                <select 
+                    name="algoritmoConsenso" 
+                    // ✅ Default visual: "absoluto"
+                    value={formData.algoritmoConsenso || "absoluto"} 
+                    onChange={handleChange} 
+                    className={inputClass}
+                >
                     {algoritmosConsenso.map(opt => (
-                        <option 
+                         <option 
                             key={opt.valor} 
                             value={opt.valor}
-                            // 🔥 FIX: Fondo sólido para las opciones
                             className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"
-                        >
+                         >
                             {opt.label}
                         </option>
                     ))}
                 </select>
             </div>
         </div>
-
-        <div className="h-px bg-gray-200 dark:bg-white/10" />
-
+        
         {/* FUENTES */}
+        <div className="h-px bg-gray-200 dark:bg-white/10" />
         <div>
             <label className={labelClass + " mb-2 block"}>Fuentes de Datos</label>
             <div className="flex flex-wrap gap-2">
@@ -119,9 +121,8 @@ const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar
             </div>
         </div>
 
-        <div className="h-px bg-gray-200 dark:bg-white/10" />
-
         {/* CRITERIOS */}
+        <div className="h-px bg-gray-200 dark:bg-white/10" />
         <div>
             <label className={labelClass + " mb-2 block"}>Criterios - Categorías</label>
             <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto custom-scrollbar p-1">
@@ -139,7 +140,7 @@ const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar
             </div>
         </div>
 
-        {/* Fechas Compactas */}
+        {/* Fechas */}
         <div className="grid grid-cols-2 gap-3">
             <div>
                 <label className={labelClass}>Desde (Acont.)</label>
@@ -151,7 +152,7 @@ const ColeccionesForm = ({ formData, setFormData, modoEdicion, guardar, cancelar
             </div>
         </div>
 
-        {/* ACCIONES */}
+        {/* Botones */}
         <div className="flex gap-3 pt-4">
             {modoEdicion && (
                 <button onClick={cancelar} className="flex-1 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 font-bold text-sm">
