@@ -137,6 +137,7 @@ const SolicitudesAprobacion = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      // El backend ahora espera ?estadoDeseado=... y devuelve una lista directa
       const response = await fetch(`${URL_LISTAR}?estadoDeseado=EN_REVISION`, {
         method: "GET",
         headers: {
@@ -145,17 +146,27 @@ const SolicitudesAprobacion = () => {
         },
       });
 
+      // Manejo específico del 204 No Content (Lista vacía)
+      if (response.status === 204) {
+        setHechos([]);
+        return;
+      }
+
       if (!response.ok) throw new Error(`Error ${response.status}`);
+
+      // Ahora el backend devuelve directamente el array JSON [{}, {}]
       const data = await response.json();
 
-      if (data.hechos && Array.isArray(data.hechos)) {
-        setHechos(data.hechos);
+      if (Array.isArray(data)) {
+        setHechos(data);
       } else {
+        console.warn("La respuesta no es un array:", data);
         setHechos([]);
       }
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al cargar hechos pendientes");
+      setHechos([]);
     } finally {
       setLoading(false);
     }
@@ -204,6 +215,7 @@ const SolicitudesAprobacion = () => {
         setModoEdicionId(null);
         setTextoSugerencia("");
       }
+      // Recargamos la lista con la nueva lógica
       cargarHechosPendientes();
     } catch (error) {
       console.error(error);
