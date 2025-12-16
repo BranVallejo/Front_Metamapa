@@ -12,8 +12,7 @@ const SolicitudesEliminacion = () => {
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(null); // ID de la solicitud que se está procesando
 
-  // URL Base del Backend (Puerto 8080 - Gateway)
-  const API_BASE_URL = "http://localhost:8080/gestordatos/publica";
+  const API_BASE_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica`;
 
   // --- CARGAR SOLICITUDES (GET) ---
   const cargarSolicitudes = async () => {

@@ -79,11 +79,7 @@ const FuentesEstaticas = () => {
   // Referencia para el input file oculto
   const fileInputRef = useRef(null);
 
-  // CONFIGURACIÓN API (A través del Gateway 8080)
-  // Estructura: http://localhost:8080/{modulo}/{path_del_microservicio}
-  // Modulo: fuenteEstatica
-  // Path: /admin/fuentes
-  const API_URL = "http://localhost:8101/fuenteEstatica/admin/fuentes";
+  const API_URL = `${import.meta.env.VITE_URL_INICIAL_ESTATICA}/admin/fuentes`;
 
   const getToken = () => localStorage.getItem("token");
 

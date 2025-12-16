@@ -72,7 +72,7 @@ const PaginaReporte = () => {
       };
 
       const response = await fetch(
-        "http://localhost:8080/gestordatos/publica/solicitudes",
+        `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica/solicitudes`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
