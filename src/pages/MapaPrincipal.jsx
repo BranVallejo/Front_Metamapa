@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // <--- 1. IMPORT NECESARIO
 import {
   MapContainer,
   TileLayer,
@@ -127,6 +128,7 @@ const getFileType = (url) => {
 };
 
 const MapaPrincipal = () => {
+  const navigate = useNavigate(); // <--- 2. INICIALIZAR NAVIGATE
   const [panelFiltrosAbierto, setPanelFiltrosAbierto] = useState(false);
   const [hechoSeleccionadoId, setHechoSeleccionadoId] = useState(null);
   const [marcadores, setMarcadores] = useState([]);
@@ -168,9 +170,11 @@ const MapaPrincipal = () => {
 
   // Función para hacer peticiones GraphQL - CONSULTA COMPLETA CON TODOS LOS CAMPOS
   const fetchHechosGraphQL = async (variables) => {
+    // 3. CAMBIO IMPORTANTE: AGREGUÉ EL CAMPO 'id' AL QUERY
     const query = `
       query ($filtro: HechoFiltroInput) {
         obtenerHechosFiltrados(filtro: $filtro) {
+          id
           titulo
           descripcion
           categoria
@@ -474,10 +478,19 @@ const MapaPrincipal = () => {
     setPanelFiltrosAbierto(false);
   };
 
-  const reportarHecho = (hecho) =>
-    (window.location.href = `solicitarEliminacion/${
-      hecho.hecho_id || hecho.id || encodeURIComponent(hecho.titulo)
-    }`);
+  // 4. FUNCIÓN REPORTAR HECHO CORREGIDA
+  const reportarHecho = (hecho) => {
+    // Verificamos si existe el ID (puede venir como 'id' o 'hecho_id')
+    const idFinal = hecho.id || hecho.hecho_id;
+
+    if (!idFinal) {
+      console.error("❌ Error: Este hecho no tiene ID cargado. Revisa la Query GraphQL.", hecho);
+      return;
+    }
+
+    // Usamos el navigate del router en lugar de recargar la página
+    navigate(`/solicitarEliminacion/${idFinal}`);
+  };
 
   return (
     <>
@@ -517,19 +530,19 @@ const MapaPrincipal = () => {
 
         /* --- MODO OSCURO (ACTIVADO POR CLASE .dark) --- */
         .dark .leaflet-popup-content-wrapper {
-             background: rgba(31, 41, 55, 0.95) !important;
-             border-color: rgba(255, 255, 255, 0.1);
-             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+              background: rgba(31, 41, 55, 0.95) !important;
+              border-color: rgba(255, 255, 255, 0.1);
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
         .dark .leaflet-popup-tip {
-             background: rgba(31, 41, 55, 0.95) !important;
+              background: rgba(31, 41, 55, 0.95) !important;
         }
         .dark .leaflet-container a.leaflet-popup-close-button {
-             color: #ccc;
+              color: #ccc;
         }
         .dark .leaflet-container a.leaflet-popup-close-button:hover {
-             color: #fff;
-             background: rgba(255,255,255,0.1);
+              color: #fff;
+              background: rgba(255,255,255,0.1);
         }
       `}</style>
 
@@ -555,12 +568,14 @@ const MapaPrincipal = () => {
             setMarcadores={setMarcadores}
           />
           {marcadores.map((hecho, index) => {
-            // Usamos el índice como ID temporal ya que no tenemos campo id
-            const hechoId = index.toString();
+            // Usamos el índice como key temporal para el map de React, pero usamos el ID real para lógica
+            const hechoKey = index.toString();
+            // Aseguramos que tenemos un ID único para seleccionar (usamos el ID real si existe)
+            const uniqueId = hecho.id ? hecho.id.toString() : index.toString();
 
             return (
               <Marker
-                key={hechoId}
+                key={hechoKey}
                 position={[
                   parseFloat(hecho.latitud),
                   parseFloat(hecho.longitud),
@@ -568,11 +583,11 @@ const MapaPrincipal = () => {
                 icon={obtenerIconoParaHecho(hecho)}
                 eventHandlers={{
                   click: () => {
-                    setHechoSeleccionadoId(hechoId);
+                    setHechoSeleccionadoId(uniqueId);
                   },
                 }}
               >
-                {hechoSeleccionadoId === hechoId && (
+                {hechoSeleccionadoId === uniqueId && (
                   <Popup
                     autoClose={false}
                     closeOnClick={false}
@@ -607,6 +622,8 @@ const MapaPrincipal = () => {
                             ).toLocaleDateString()}
                           </p>
                         )}
+                        {/* DEBUG: Solo para que veas si está llegando el ID */}
+                        {/* <p className="text-[9px] text-red-500">ID: {hecho.id}</p> */}
                       </div>
 
                       {/* Footer - SOLO si hay archivos multimedia */}
@@ -652,15 +669,15 @@ const MapaPrincipal = () => {
           })}
         </MapContainer>
 
-        {/* --- BOTÓN DE FILTROS FLOTANTE ARREGLADO (MODO OSCURO AGREGADO) --- */}
+        {/* --- BOTÓN DE FILTROS FLOTANTE --- */}
         <div className="absolute top-32 left-4 z-[1000] md:top-24">
           <button
             onClick={() => setPanelFiltrosAbierto(true)}
             className="group flex items-center p-2 md:pl-4 md:pr-6 md:py-3.5 
-                       bg-white/90 dark:bg-gray-800/90 
-                       backdrop-blur-md rounded-full shadow-lg 
-                       border border-white/40 dark:border-gray-600 
-                       transition-all hover:scale-105 gap-0 md:gap-3"
+                        bg-white/90 dark:bg-gray-800/90 
+                        backdrop-blur-md rounded-full shadow-lg 
+                        border border-white/40 dark:border-gray-600 
+                        transition-all hover:scale-105 gap-0 md:gap-3"
           >
             {/* Ícono de filtros */}
             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-600 relative transition-colors">
