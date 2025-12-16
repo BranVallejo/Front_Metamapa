@@ -19,7 +19,7 @@ const IconPlus = () => (
 );
 const IconServer = () => (
   <svg
-    className="w-8 h-8 text-indigo-500"
+    className="w-8 h-8 text-blue-500"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -192,7 +192,7 @@ const FuentesDemo = () => {
         </h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95"
         >
           <IconPlus />
           Conectar API
@@ -202,7 +202,7 @@ const FuentesDemo = () => {
       {/* Grid de Tarjetas */}
       {loading && fuentes.length === 0 ? (
         <div className="text-center py-10">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-500">Verificando conexiones...</p>
         </div>
       ) : (
@@ -216,7 +216,7 @@ const FuentesDemo = () => {
                 <div
                   className={`p-3 rounded-xl ${
                     fuente.activa
-                      ? "bg-indigo-50 dark:bg-indigo-900/30"
+                      ? "bg-blue-50 dark:bg-blue-900/30"
                       : "bg-gray-100"
                   }`}
                 >
@@ -240,7 +240,7 @@ const FuentesDemo = () => {
 
                   {/* Info Detectada (si existe en el DTO) */}
                   {(fuente.nombreDetectado || fuente.etiquetaDetectada) && (
-                    <div className="mt-1 flex gap-2 text-xs text-indigo-600 dark:text-indigo-400">
+                    <div className="mt-1 flex gap-2 text-xs text-blue-600 dark:text-blue-400">
                       {fuente.nombreDetectado && (
                         <span>Detectado: {fuente.nombreDetectado}</span>
                       )}
@@ -301,7 +301,7 @@ const FuentesDemo = () => {
                 <input
                   type="text"
                   name="nombreFuente"
-                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   placeholder="Ej: Servidor Demo Latam"
                   value={formData.nombreFuente}
                   onChange={handleInputChange}
@@ -316,7 +316,7 @@ const FuentesDemo = () => {
                   <input
                     type="text"
                     name="url"
-                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                     placeholder="http://api.externa.com"
                     value={formData.url}
                     onChange={handleInputChange}
@@ -329,7 +329,7 @@ const FuentesDemo = () => {
                   <input
                     type="text"
                     name="pathApi"
-                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                     placeholder="/v1/data"
                     value={formData.pathApi}
                     onChange={handleInputChange}
@@ -345,7 +345,7 @@ const FuentesDemo = () => {
                   name="requiereAuth"
                   checked={formData.requiereAuth}
                   onChange={handleInputChange}
-                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300"
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
                 />
                 <label
                   htmlFor="requiereAuth"
@@ -357,15 +357,15 @@ const FuentesDemo = () => {
 
               {/* Campos condicionales de Auth */}
               {formData.requiereAuth && (
-                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 space-y-3 animate-fadeIn">
-                  <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-300 text-xs font-bold uppercase mb-1">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 space-y-3 animate-fadeIn">
+                  <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 text-xs font-bold uppercase mb-1">
                     <IconLock /> Credenciales
                   </div>
                   <div>
                     <input
                       type="email"
                       name="email"
-                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
                       placeholder="Email de conexión"
                       value={formData.email}
                       onChange={handleInputChange}
@@ -375,7 +375,7 @@ const FuentesDemo = () => {
                     <input
                       type="password"
                       name="password"
-                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
                       placeholder="Contraseña"
                       value={formData.password}
                       onChange={handleInputChange}
@@ -395,7 +395,7 @@ const FuentesDemo = () => {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 py-3.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="flex-1 py-3.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? "Validando..." : "Registrar Fuente"}
               </button>
