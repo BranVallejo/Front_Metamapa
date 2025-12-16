@@ -164,6 +164,55 @@ const MapaPrincipal = () => {
 
   const zoomMinimoParaHechos = 13;
   const API_BASE_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica`;
+  const GRAPHQL_ENDPOINT = "http://localhost:8500/graphql";
+
+  // Función para hacer peticiones GraphQL - CONSULTA COMPLETA CON TODOS LOS CAMPOS
+  const fetchHechosGraphQL = async (variables) => {
+    const query = `
+      query ($filtro: HechoFiltroInput) {
+        obtenerHechosFiltrados(filtro: $filtro) {
+          titulo
+          descripcion
+          categoria
+          fechaAcontecimiento
+          latitud
+          longitud
+          archivosMultimedia
+        }
+      }
+    `;
+
+    console.log("🚀 Enviando query GraphQL:", query);
+    console.log("📦 Variables enviadas:", variables);
+
+    try {
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          variables: { filtro: variables },
+        }),
+      });
+
+      const result = await response.json();
+
+      console.log("✅ Respuesta GraphQL completa:", result);
+
+      if (result.errors) {
+        console.error("❌ GraphQL errors:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      console.log("📊 Hechos recibidos:", result.data?.obtenerHechosFiltrados);
+      return result.data?.obtenerHechosFiltrados || [];
+    } catch (error) {
+      console.error("❌ Error en GraphQL request:", error);
+      throw error;
+    }
+  };
 
   const abrirVisor = (archivos, indiceInicial = 0) => {
     setArchivosMultimediaActuales(archivos);
@@ -192,20 +241,13 @@ const MapaPrincipal = () => {
     const tipoArchivo = getFileType(archivoActual);
 
     return (
-      /* CAMBIO 1: z-[2000] -> z-[99999] 
-         Esto asegura que el fondo negro y el visor tapen ABSOLUTAMENTE TODO, incluido el Navbar.
-      */
       <div className="fixed inset-0 bg-black/95 z-[99999] flex flex-col animate-fadeIn">
-        {/* CAMBIO 2: z-50 -> z-[100000]
-           El header interno debe ser mayor o igual al padre para que los botones sean clickeables.
-        */}
         <div className="flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 w-full z-[100000]">
           <div className="text-white/80 text-sm font-medium backdrop-blur-md bg-black/30 px-3 py-1 rounded-full">
             {imagenActual + 1} / {archivosMultimediaActuales.length}
           </div>
           <button
             onClick={cerrarVisor}
-            /* Agregamos cursor-pointer y aseguramos pointer-events-auto por si acaso */
             className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all cursor-pointer pointer-events-auto"
           >
             <svg
@@ -343,43 +385,55 @@ const MapaPrincipal = () => {
   const cargarHechosParaAreaVisible = async () => {
     if (!bounds) return;
     setInfoMapa("Cargando hechos...");
-    const params = new URLSearchParams();
-    const { _southWest, _northEast } = bounds;
-    params.append("sur", _southWest.lat);
-    params.append("oeste", _southWest.lng);
-    params.append("norte", _northEast.lat);
-    params.append("este", _northEast.lng);
-    Object.entries(filtrosAplicados).forEach(([k, v]) => {
-      if (!v) return;
 
-      // Normalizar fechas YYYY-MM-DD → YYYY-MM-DDT00:00:00
-      if (
-        [
-          "desdeAcontecimiento",
-          "hastaAcontecimiento",
-          "desdeCarga",
-          "hastaCarga",
-        ].includes(k)
-      ) {
-        params.append(k, `${v}T00:00:00`);
-      } else {
-        params.append(k, v);
+    const { _southWest, _northEast } = bounds;
+
+    // Construir variables GraphQL desde los filtros aplicados
+    const variables = {
+      sur: _southWest.lat,
+      oeste: _southWest.lng,
+      norte: _northEast.lat,
+      este: _northEast.lng,
+      titulo: filtrosAplicados.titulo || undefined,
+      descripcion: filtrosAplicados.descripcion || undefined,
+      categoria: filtrosAplicados.categoria || undefined,
+      contieneMultimedia: filtrosAplicados.contieneMultimedia
+        ? filtrosAplicados.contieneMultimedia === "true"
+        : undefined,
+      desdeAcontecimiento: filtrosAplicados.desdeAcontecimiento
+        ? `${filtrosAplicados.desdeAcontecimiento}T00:00:00`
+        : undefined,
+      hastaAcontecimiento: filtrosAplicados.hastaAcontecimiento
+        ? `${filtrosAplicados.hastaAcontecimiento}T23:59:59`
+        : undefined,
+      desdeCarga: filtrosAplicados.desdeCarga
+        ? `${filtrosAplicados.desdeCarga}T00:00:00`
+        : undefined,
+      hastaCarga: filtrosAplicados.hastaCarga
+        ? `${filtrosAplicados.hastaCarga}T23:59:59`
+        : undefined,
+      estadoDeseado: filtrosAplicados.estadoDeseado || "VISIBLE",
+    };
+
+    // Añadir filtros de colección si existen
+    if (coleccionAplicada) {
+      variables.coleccionId = coleccionAplicada.handle;
+      variables.modo = modoColeccionAplicada;
+    }
+
+    // Eliminar propiedades undefined para no enviarlas
+    Object.keys(variables).forEach((key) => {
+      if (variables[key] === undefined) {
+        delete variables[key];
       }
     });
 
-    if (coleccionAplicada) {
-      params.append("coleccionId", coleccionAplicada.handle);
-      params.append("modo", modoColeccionAplicada);
-    }
-
     try {
-      const res = await fetch(`${API_BASE_URL}/hechos?${params.toString()}`);
-      const data = await res.json();
-      if (data?.hechos) {
-        setMarcadores(data.hechos);
-        setInfoMapa(
-          `Cargados ${data.hechos_encontrados || data.hechos.length} hechos`
-        );
+      const hechos = await fetchHechosGraphQL(variables);
+
+      if (hechos && hechos.length > 0) {
+        setMarcadores(hechos);
+        setInfoMapa(`Cargados ${hechos.length} hechos`);
       } else {
         setMarcadores([]);
         setInfoMapa("No se encontraron hechos");
@@ -422,7 +476,7 @@ const MapaPrincipal = () => {
 
   const reportarHecho = (hecho) =>
     (window.location.href = `solicitarEliminacion/${
-      hecho.id || hecho.hecho_id
+      hecho.hecho_id || hecho.id || encodeURIComponent(hecho.titulo)
     }`);
 
   return (
@@ -462,9 +516,8 @@ const MapaPrincipal = () => {
         }
 
         /* --- MODO OSCURO (ACTIVADO POR CLASE .dark) --- */
-        /* Importante: Usamos la clase .dark global para sobreescribir */
         .dark .leaflet-popup-content-wrapper {
-             background: rgba(31, 41, 55, 0.95) !important; /* gray-800 */
+             background: rgba(31, 41, 55, 0.95) !important;
              border-color: rgba(255, 255, 255, 0.1);
              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
@@ -502,11 +555,12 @@ const MapaPrincipal = () => {
             setMarcadores={setMarcadores}
           />
           {marcadores.map((hecho, index) => {
-            const hechoId = hecho.id || hecho.hecho_id;
+            // Usamos el índice como ID temporal ya que no tenemos campo id
+            const hechoId = index.toString();
 
             return (
               <Marker
-                key={hechoId ?? index}
+                key={hechoId}
                 position={[
                   parseFloat(hecho.latitud),
                   parseFloat(hecho.longitud),
@@ -539,18 +593,6 @@ const MapaPrincipal = () => {
                         </h3>
                       </div>
 
-                      {/* Sugerencia del Admin */}
-                      {hecho.sugerencia_cambio && (
-                        <div className="mx-5 px-3 py-2 bg-yellow-50/80 dark:bg-yellow-900/30 border-l-2 border-yellow-400 rounded-r-md">
-                          <p className="text-[10px] font-bold text-yellow-700 dark:text-yellow-200 uppercase mb-0.5">
-                            Nota de moderación
-                          </p>
-                          <p className="text-xs text-yellow-800 dark:text-yellow-100 italic leading-snug">
-                            "{hecho.sugerencia_cambio}"
-                          </p>
-                        </div>
-                      )}
-
                       {/* Cuerpo */}
                       <div className="px-5 pb-4">
                         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mt-2 line-clamp-4">
@@ -567,26 +609,40 @@ const MapaPrincipal = () => {
                         )}
                       </div>
 
-                      {/* Footer */}
-                      <div className="bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-600 p-3 flex gap-2">
-                        {hecho.archivosMultimedia?.length > 0 && (
-                          <button
-                            onClick={() => abrirVisor(hecho.archivosMultimedia)}
-                            className="flex-1 py-2 bg-gray-900 hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-xs font-bold rounded-lg shadow-md transition-all hover:scale-[1.02] active:scale-95"
-                          >
-                            Ver Fotos ({hecho.archivosMultimedia.length})
-                          </button>
+                      {/* Footer - SOLO si hay archivos multimedia */}
+                      {hecho.archivosMultimedia &&
+                        hecho.archivosMultimedia.length > 0 && (
+                          <div className="bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-600 p-3 flex gap-2">
+                            <button
+                              onClick={() =>
+                                abrirVisor(hecho.archivosMultimedia)
+                              }
+                              className="flex-1 py-2 bg-gray-900 hover:bg-black dark:bg-gray-600 dark:hover:bg-gray-500 text-white text-xs font-bold rounded-lg shadow-md transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                              Ver Fotos ({hecho.archivosMultimedia.length})
+                            </button>
+
+                            <button
+                              onClick={() => reportarHecho(hecho)}
+                              className="flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                              Reportar
+                            </button>
+                          </div>
                         )}
 
-                        <button
-                          onClick={() => reportarHecho(hecho)}
-                          className={`flex-1 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95 ${
-                            !hecho.archivosMultimedia?.length ? "w-full" : ""
-                          }`}
-                        >
-                          Reportar
-                        </button>
-                      </div>
+                      {/* Footer - SI NO hay archivos multimedia */}
+                      {(!hecho.archivosMultimedia ||
+                        hecho.archivosMultimedia.length === 0) && (
+                        <div className="bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm border-t border-gray-100 dark:border-gray-600 p-3">
+                          <button
+                            onClick={() => reportarHecho(hecho)}
+                            className="w-full py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white shadow-md text-xs font-bold rounded-lg transition-all hover:scale-[1.02] active:scale-95"
+                          >
+                            Reportar
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {/* ===== FIN POPUP CARD ===== */}
                   </Popup>
