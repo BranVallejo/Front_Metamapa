@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // <--- 1. IMPORT NECESARIO
+import { useNavigate } from "react-router-dom"; // <--- IMPORT NECESARIO
 import {
   MapContainer,
   TileLayer,
@@ -128,7 +128,7 @@ const getFileType = (url) => {
 };
 
 const MapaPrincipal = () => {
-  const navigate = useNavigate(); // <--- 2. INICIALIZAR NAVIGATE
+  const navigate = useNavigate(); // Hook de navegación
   const [panelFiltrosAbierto, setPanelFiltrosAbierto] = useState(false);
   const [hechoSeleccionadoId, setHechoSeleccionadoId] = useState(null);
   const [marcadores, setMarcadores] = useState([]);
@@ -168,9 +168,9 @@ const MapaPrincipal = () => {
   const API_BASE_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica`;
   const GRAPHQL_ENDPOINT = "http://localhost:8500/graphql";
 
-  // Función para hacer peticiones GraphQL - CONSULTA COMPLETA CON TODOS LOS CAMPOS
+  // Función para hacer peticiones GraphQL - CONSULTA COMPLETA
   const fetchHechosGraphQL = async (variables) => {
-    // 3. CAMBIO IMPORTANTE: AGREGUÉ EL CAMPO 'id' AL QUERY
+    // 🔥 CAMBIO CLAVE: Pedimos 'id' y 'sugerencia_cambio'
     const query = `
       query ($filtro: HechoFiltroInput) {
         obtenerHechosFiltrados(filtro: $filtro) {
@@ -182,6 +182,7 @@ const MapaPrincipal = () => {
           latitud
           longitud
           archivosMultimedia
+          sugerencia_cambio
         }
       }
     `;
@@ -478,9 +479,7 @@ const MapaPrincipal = () => {
     setPanelFiltrosAbierto(false);
   };
 
-  // 4. FUNCIÓN REPORTAR HECHO CORREGIDA
   const reportarHecho = (hecho) => {
-    // Verificamos si existe el ID (puede venir como 'id' o 'hecho_id')
     const idFinal = hecho.id || hecho.hecho_id;
 
     if (!idFinal) {
@@ -488,7 +487,6 @@ const MapaPrincipal = () => {
       return;
     }
 
-    // Usamos el navigate del router en lugar de recargar la página
     navigate(`/solicitarEliminacion/${idFinal}`);
   };
 
@@ -568,9 +566,7 @@ const MapaPrincipal = () => {
             setMarcadores={setMarcadores}
           />
           {marcadores.map((hecho, index) => {
-            // Usamos el índice como key temporal para el map de React, pero usamos el ID real para lógica
             const hechoKey = index.toString();
-            // Aseguramos que tenemos un ID único para seleccionar (usamos el ID real si existe)
             const uniqueId = hecho.id ? hecho.id.toString() : index.toString();
 
             return (
@@ -614,6 +610,18 @@ const MapaPrincipal = () => {
                           {hecho.descripcion || "Sin descripción disponible."}
                         </p>
 
+                        {/* --- 🔥 MOSTRAR SUGERENCIA_CAMBIO DEL ADMIN --- */}
+                        {hecho.sugerencia_cambio && (
+                          <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+                            <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-1 flex items-center gap-1">
+                              <span>⚠️</span> Sugerencia del Admin:
+                            </p>
+                            <p className="text-xs text-gray-700 dark:text-gray-200 italic">
+                              "{hecho.sugerencia_cambio}"
+                            </p>
+                          </div>
+                        )}
+
                         {hecho.fechaAcontecimiento && (
                           <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 font-medium">
                             Ocurrido el:{" "}
@@ -622,8 +630,6 @@ const MapaPrincipal = () => {
                             ).toLocaleDateString()}
                           </p>
                         )}
-                        {/* DEBUG: Solo para que veas si está llegando el ID */}
-                        {/* <p className="text-[9px] text-red-500">ID: {hecho.id}</p> */}
                       </div>
 
                       {/* Footer - SOLO si hay archivos multimedia */}
@@ -679,7 +685,6 @@ const MapaPrincipal = () => {
                         border border-white/40 dark:border-gray-600 
                         transition-all hover:scale-105 gap-0 md:gap-3"
           >
-            {/* Ícono de filtros */}
             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full group-hover:bg-gray-200 dark:group-hover:bg-gray-600 relative transition-colors">
               <FiltroIcono />
               {(filtrosAplicados.categoria || coleccionAplicada) && (
@@ -687,7 +692,6 @@ const MapaPrincipal = () => {
               )}
             </div>
 
-            {/* Texto de filtros */}
             <div className="hidden md:flex flex-col text-left">
               <span className="font-bold text-gray-900 dark:text-white text-sm">
                 Filtros
