@@ -15,12 +15,12 @@ import EditarHecho from "./pages/EditarHecho";
 import Estadisticas from "./pages/Estadisticas";
 import Fuentes from "./pages/Fuentes";
 
-// Solicitudes (Usuario)
-import PaginaReporte from "./pages/SolicitudEliminacion"; // Formulario para reportar
-
-// Solicitudes (Admin - Nuevo Módulo con Pestañas)
-// 👇 AQUÍ ESTÁ EL CAMBIO DE RUTA SEGÚN TU ESTRUCTURA DE CARPETAS
+// Solicitudes
+import PaginaReporte from "./pages/SolicitudEliminacion"; 
 import ModuloSolicitudesAdmin from "./pages/Solicitudes/ModuloSolicitudesAdmin"; 
+
+// Seguridad (NUEVO)
+import GestionSeguridad from "./pages/GestionSeguridad"; // Crea la carpeta 'Seguridad'
 
 function AppContent() {
   const location = useLocation();
@@ -29,7 +29,7 @@ function AppContent() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
-      {/* 👇 AQUÍ ESTÁ EL CAMBIO: z-50 -> z-[5000] */}
+      {/* Header con z-index alto para sobreponerse al mapa */}
       <header className="absolute top-0 w-full z-[5000]">
         <Header />
       </header>
@@ -51,16 +51,15 @@ function AppContent() {
           <Route path="/colecciones" element={<GestionColecciones />} />
           <Route path="/fuentes" element={<Fuentes />} />
           <Route path="/estadisticas" element={<Estadisticas />} />
+          
+          {/* 👇 NUEVA RUTA DE SEGURIDAD */}
+          <Route path="/seguridad" element={<GestionSeguridad />} />
 
-          {/* Ruta para que el USUARIO reporte un hecho (Formulario) */}
+          {/* Gestión de Reportes y Solicitudes */}
           <Route
             path="/solicitarEliminacion/:idHecho"
             element={<PaginaReporte />}
           />
-
-          {/* Ruta para que el ADMIN gestione las solicitudes (Aprobación y Eliminación) */}
-          {/* Nota: Mantuve el path "/solicitudes-eliminacion" para que coincida con tu Header, 
-              aunque ahora el módulo hace más cosas (Aprobar y Eliminar) */}
           <Route
             path="/solicitudes-eliminacion"
             element={<ModuloSolicitudesAdmin />}
