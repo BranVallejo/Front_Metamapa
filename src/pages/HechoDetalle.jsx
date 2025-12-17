@@ -21,28 +21,41 @@ const HechoDetalle = () => {
    const [error, setError] = useState(null);
 
    useEffect(() => {
-      setLoading(true);
-      fetch(
-         `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica/hechos?idBuscado=${id}`,
-         { method: "GET" }
-      )
-         .then(res => {
-            if (!res.ok) throw new Error(`Error ${res.status}`);
-            return res.json();
-         })
-         .then(data => {
-            if (data?.hechos?.length > 0) {
-               setHecho(data.hechos[0]);
-            } else {
-               throw new Error("Hecho no encontrado");
+      const cargarDetalle = async () => {
+         setLoading(true);
+         try {
+            // Asumimos que el backend filtra por 'idBuscado' o 'id'
+            const url = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica/hechos?idBuscado=${id}`;
+            const res = await fetch(url, { method: "GET" });
+
+            // Manejo de 204 (No encontrado / Sin contenido)
+            if (res.status === 204) {
+               throw new Error("El hecho buscado no existe o no está disponible.");
             }
-         })
-         .catch(err => {
+
+            if (!res.ok) {
+               throw new Error(`Error del servidor (${res.status})`);
+            }
+
+            // Lectura directa del Array
+            const data = await res.json();
+
+            if (Array.isArray(data) && data.length > 0) {
+               setHecho(data[0]); // Tomamos el primero (y único) de la lista
+            } else {
+               throw new Error("Hecho no encontrado en la respuesta.");
+            }
+
+         } catch (err) {
             console.error(err);
             setError(err.message);
-            toast.error("Error al cargar", { description: err.message });
-         })
-         .finally(() => setLoading(false));
+            toast.error("Error al cargar detalle", { description: err.message });
+         } finally {
+            setLoading(false);
+         }
+      };
+
+      if (id) cargarDetalle();
    }, [id]);
 
    // Helper para evitar error de toFixed en coordenadas nulas
@@ -50,6 +63,8 @@ const HechoDetalle = () => {
       const num = Number(val);
       return !isNaN(num) ? num.toFixed(4) : "N/A";
    };
+   
+   // Conversión segura de coordenadas
    const safeLat = Number(hecho?.latitud) || 0;
    const safeLng = Number(hecho?.longitud) || 0;
 
@@ -72,7 +87,10 @@ const HechoDetalle = () => {
             <FondoChill />
             <div className="relative z-10 p-8 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl text-center">
                <h1 className="text-2xl font-bold text-white mb-4">No encontrado</h1>
-               <Link to="/misHechos" className="text-blue-400 hover:underline">Volver al listado</Link>
+               <p className="text-gray-300 mb-6">{error || "El hecho solicitado no existe."}</p>
+               <Link to="/misHechos" className="px-4 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition-colors">
+                  Volver al listado
+               </Link>
             </div>
          </div>
       );
@@ -85,12 +103,8 @@ const HechoDetalle = () => {
          <FondoChill />
          <Toaster richColors position="top-right" />
 
-         {/* 🔥 CSS INJECTION: LA CLAVE DE LA UNIFORMIDAD
-         Esto fuerza a todos tus componentes hijos a perder sus bordes y fondos individuales
-         para que se integren 100% en nuestras nuevas tarjetas de cristal.
-      */}
+         {/* CSS INJECTION: ESTILOS GLASS UNIFICADOS */}
          <style>{`
-        /* Reseteamos los contenedores hijos */
         .glass-content > div, 
         .glass-content > div > div {
             background-color: transparent !important;
@@ -99,7 +113,6 @@ const HechoDetalle = () => {
             padding: 0 !important;
         }
         
-        /* Unificamos tipografía de etiquetas en los hijos */
         .glass-content h3, 
         .glass-content label, 
         .glass-content .text-sm.font-medium {
@@ -111,7 +124,6 @@ const HechoDetalle = () => {
             margin-bottom: 0.5rem;
         }
 
-        /* Textos principales más legibles */
         .glass-content p, 
         .glass-content span, 
         .glass-content input, 
@@ -129,13 +141,10 @@ const HechoDetalle = () => {
                   <Link to="/misHechos" className="inline-flex items-center text-xs font-bold tracking-wider text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors uppercase">
                      &larr; Volver al listado
                   </Link>
-                  {/* Título y Categoría (Renderizados limpios) */}
                   <div className="glass-content">
                      <HechoHeader titulo={hecho.titulo} categoria={hecho.categoria} />
                   </div>
                </div>
-
-
             </div>
 
             {/* GRID PRINCIPAL */}
@@ -144,7 +153,22 @@ const HechoDetalle = () => {
                {/* --- COLUMNA IZQUIERDA (Info) --- */}
                <div className="lg:col-span-8 space-y-6">
 
-                  {/* TARJETA 1: DESCRIPCIÓN (La más importante) */}
+                  {/* 🔥 TARJETA DE SUGERENCIA DEL ADMIN (NUEVA) 🔥 */}
+                  {hecho.sugerencia_cambio && (
+                     <div className="bg-amber-50 dark:bg-amber-900/20 backdrop-blur-xl border border-amber-200 dark:border-amber-700/50 rounded-2xl p-6 shadow-sm animate-pulse-slow">
+                        <h3 className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-2">
+                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                           </svg>
+                           Sugerencia del Administrador
+                        </h3>
+                        <p className="text-gray-700 dark:text-gray-200 italic font-medium">
+                           "{hecho.sugerencia_cambio}"
+                        </p>
+                     </div>
+                  )}
+
+                  {/* TARJETA 1: DESCRIPCIÓN */}
                   <div className="bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl border border-white/40 dark:border-gray-700/50 rounded-2xl p-8 shadow-sm">
                      <h2 className="text-lg font-bold mb-4 opacity-90">Descripción del Evento</h2>
                      <div className="glass-content text-lg leading-relaxed opacity-90">
@@ -152,7 +176,7 @@ const HechoDetalle = () => {
                      </div>
                   </div>
 
-                  {/* TARJETA 2: DATOS TÉCNICOS (Grid interno) */}
+                  {/* TARJETA 2: DATOS TÉCNICOS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div className="bg-white/50 dark:bg-gray-800/40 backdrop-blur-lg border border-white/30 dark:border-gray-700/30 rounded-2xl p-6">
                         <div className="glass-content">
@@ -180,12 +204,11 @@ const HechoDetalle = () => {
                <div className="lg:col-span-4">
                   <div className="sticky top-28 space-y-6">
 
-                     {/* TARJETA 4: ACCIONES (Limpia, sin colores raros) */}
+                     {/* TARJETA 4: ACCIONES */}
                      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/50 dark:border-gray-600/50 rounded-2xl p-6 shadow-xl">
                         <h2 className="text-sm font-bold opacity-70 uppercase tracking-wider mb-6 border-b border-gray-200 dark:border-gray-700 pb-2">
                            Acciones
                         </h2>
-                        {/* El CSS inyectado limpiará los estilos de los botones hijos */}
                         <div className="glass-content space-y-3">
                            <PanelAcciones
                               idHecho={hecho.id}
