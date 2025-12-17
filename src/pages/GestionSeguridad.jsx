@@ -6,18 +6,48 @@ import FondoChill from "../Components/FondoDinamico/FondoChill";
 
 // --- ICONOS ---
 const IconShield = () => (
-  <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  <svg
+    className="w-10 h-10 text-red-500"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1.5}
+      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+    />
   </svg>
 );
 const IconLock = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+    />
   </svg>
 );
 const IconTrash = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+    />
   </svg>
 );
 
@@ -28,7 +58,7 @@ const GestionSeguridad = () => {
   const [procesando, setProcesando] = useState(false);
 
   // Endpoint base
-  const API_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/getaway`;
+  const API_URL = `${import.meta.env.VITE_URL_INICIAL_GETAWAY}`;
 
   useEffect(() => {
     cargarIps();
@@ -41,9 +71,9 @@ const GestionSeguridad = () => {
       const res = await fetch(API_URL, {
         headers: { Authorization: token ? `Bearer ${token}` : "" },
       });
-      
+
       if (!res.ok) throw new Error("Error al cargar IPs");
-      
+
       const data = await res.json();
       setIps(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -56,7 +86,7 @@ const GestionSeguridad = () => {
 
   const bloquearIp = async (e) => {
     e.preventDefault();
-    
+
     // Validación simple de formato IPv4
     const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
     if (!ipRegex.test(ipInput)) {
@@ -69,13 +99,20 @@ const GestionSeguridad = () => {
 
     try {
       const token = localStorage.getItem("token");
+
+      console.log("Enviando IP a bloquear:", {
+        url: API_URL,
+        body: { direccion: ipInput },
+        tokenPresente: !!token,
+      });
+
       const res = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ direccion: ipInput }), 
+        body: JSON.stringify({ direccionIp: ipInput }),
       });
 
       if (!res.ok) throw new Error("Error al bloquear IP");
@@ -119,7 +156,6 @@ const GestionSeguridad = () => {
 
       {/* 👇 AQUÍ ESTÁ EL CAMBIO: Agregué pt-32 (padding-top) para bajarlo */}
       <div className="relative z-10 pt-32 pb-20 px-4 max-w-4xl mx-auto">
-        
         {/* Header */}
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-lg p-8 mb-8 border border-white/40 dark:border-white/10 flex items-center gap-6">
           <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-2xl">
@@ -137,7 +173,6 @@ const GestionSeguridad = () => {
 
         {/* Panel de Control */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
           {/* Columna Izquierda: Formulario */}
           <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-lg border border-white/30 dark:border-white/10 rounded-2xl p-6 shadow-sm h-fit">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -145,7 +180,9 @@ const GestionSeguridad = () => {
             </h2>
             <form onSubmit={bloquearIp} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Dirección IP</label>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                  Dirección IP
+                </label>
                 <input
                   type="text"
                   placeholder="Ej: 192.168.0.1"
@@ -164,7 +201,8 @@ const GestionSeguridad = () => {
             </form>
             <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-lg">
               <p className="text-xs text-yellow-700 dark:text-yellow-500">
-                ⚠️ Las IPs bloqueadas perderán acceso inmediato a la API pública.
+                ⚠️ Las IPs bloqueadas perderán acceso inmediato a la API
+                pública.
               </p>
             </div>
           </div>
@@ -198,7 +236,9 @@ const GestionSeguridad = () => {
                       <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
                       <div>
                         {/* Ajustar si tu back devuelve 'ip' o 'direccion' */}
-                        <p className="font-mono text-sm font-bold">{ip.direccion || ip.ip}</p>
+                        <p className="font-mono text-sm font-bold">
+                          {ip.direccion || ip.ip}
+                        </p>
                         <p className="text-[10px] text-gray-400">ID: {ip.id}</p>
                       </div>
                     </div>
@@ -214,7 +254,6 @@ const GestionSeguridad = () => {
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>
