@@ -120,7 +120,6 @@ const Icons = {
       />
     </svg>
   ),
-  // 👇 NUEVO ICONO PARA FUENTES
   Database: ({ className }) => (
     <svg
       className={className}
@@ -133,6 +132,22 @@ const Icons = {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+      />
+    </svg>
+  ),
+  // 👇 NUEVO ICONO DE SEGURIDAD (ESCUDO)
+  Security: ({ className }) => (
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
       />
     </svg>
   ),
@@ -246,6 +261,7 @@ const ProfessionalHeader = () => {
     ).toUpperCase();
   };
 
+  // 👇 AQUÍ AGREGUÉ LA PESTAÑA SEGURIDAD
   const navLinks = [
     { path: "/", label: "Mapa", Icon: Icons.Map, show: true },
     { path: "/misHechos", label: "Hechos", Icon: Icons.MapPin, show: true },
@@ -255,7 +271,6 @@ const ProfessionalHeader = () => {
       Icon: Icons.Folder,
       show: esAdmin(),
     },
-    // 👇 NUEVO LINK FUENTES (Solo Admin)
     {
       path: "/fuentes",
       label: "Fuentes",
@@ -272,6 +287,13 @@ const ProfessionalHeader = () => {
       path: "/estadisticas",
       label: "Estadísticas",
       Icon: Icons.Chart,
+      show: esAdmin(),
+    },
+    // 👇 NUEVO LINK SEGURIDAD (Solo Admin)
+    {
+      path: "/seguridad",
+      label: "Seguridad",
+      Icon: Icons.Security,
       show: esAdmin(),
     },
   ];
@@ -394,11 +416,12 @@ const ProfessionalHeader = () => {
 
       {/* --- NAVBAR INFERIOR (MÓVIL) --- */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe safe-area-bottom shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
+        {/* Agregado overflow-x-auto para que si hay muchos iconos se pueda scrollear horizontalmente en pantallas muy pequeñas */}
+        <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto overflow-x-auto scrollbar-hide">
           {navLinks.map(
             (link) =>
               link.show && (
-                <div key={link.path} className="flex-1 h-full">
+                <div key={link.path} className="flex-1 h-full min-w-[3rem]">
                   <MobileNavItem
                     to={link.path}
                     IconComponent={link.Icon}
