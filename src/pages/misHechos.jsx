@@ -92,7 +92,7 @@ const MisHechos = () => {
           </div>
 
           <Link
-            to="/reportar"
+            to="/hechos/nuevo"
             className="group relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-200 bg-blue-600 font-lg rounded-xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 focus:outline-none ring-offset-2 focus:ring-2 ring-blue-500 w-full md:w-auto overflow-hidden"
           >
             <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
