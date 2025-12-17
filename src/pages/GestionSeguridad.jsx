@@ -237,7 +237,7 @@ const GestionSeguridad = () => {
                       <div>
                         {/* Ajustar si tu back devuelve 'ip' o 'direccion' */}
                         <p className="font-mono text-sm font-bold">
-                          {ip.direccion || ip.ip}
+                          {ip.direccionIp || ip.direccion || ip.ip}
                         </p>
                         <p className="text-[10px] text-gray-400">ID: {ip.id}</p>
                       </div>
