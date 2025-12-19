@@ -166,14 +166,16 @@ const MapaPrincipal = () => {
 
   const zoomMinimoParaHechos = 13;
 
-  const BASE_URL = import.meta.env.VITE_URL_INICIAL_GESTOR;
+  const BASE_GESTOR = import.meta.env.VITE_URL_INICIAL_GESTOR;
+  const BASE_GRAPHQL = import.meta.env.VITE_URL_GRAPHQL;
 
-  if (!BASE_URL) {
-    throw new Error("VITE_URL_INICIAL_GESTOR no está definido (revisá .env y reiniciá Vite)");
+  if (!BASE_GESTOR || !BASE_GRAPHQL) {
+    throw new Error("Variables de entorno del Gateway no definidas");
   }
 
-  const API_BASE_URL = `${BASE_URL}/publica`;
-  const GRAPHQL_ENDPOINT = `${BASE_URL}/graphql`;
+  const API_BASE_URL = `${BASE_GESTOR}/publica`;
+  const GRAPHQL_ENDPOINT = `${BASE_GRAPHQL}/graphql`;
+
 
   // Función para hacer peticiones GraphQL - CONSULTA COMPLETA
   const fetchHechosGraphQL = async (variables) => {
