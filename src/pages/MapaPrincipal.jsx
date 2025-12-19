@@ -165,8 +165,15 @@ const MapaPrincipal = () => {
   );
 
   const zoomMinimoParaHechos = 13;
-  const API_BASE_URL = `${import.meta.env.VITE_URL_INICIAL_GESTOR}/publica`;
-  const GRAPHQL_ENDPOINT = "http://localhost:8500/graphql";
+
+  const BASE_URL = import.meta.env.VITE_URL_INICIAL_GESTOR;
+
+  if (!BASE_URL) {
+    throw new Error("VITE_URL_INICIAL_GESTOR no está definido (revisá .env y reiniciá Vite)");
+  }
+
+  const API_BASE_URL = `${BASE_URL}/publica`;
+  const GRAPHQL_ENDPOINT = `${BASE_URL}/graphql`;
 
   // Función para hacer peticiones GraphQL - CONSULTA COMPLETA
   const fetchHechosGraphQL = async (variables) => {
@@ -202,7 +209,10 @@ const MapaPrincipal = () => {
         }),
       });
 
-      const result = await response.json();
+      const text = await response.text();
+      let result;
+      try { result = JSON.parse(text); }
+      catch { throw new Error(`Respuesta no JSON (${response.status}): ${text.slice(0,200)}`); }
 
       console.log("✅ Respuesta GraphQL completa:", result);
 
